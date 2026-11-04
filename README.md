@@ -5,7 +5,7 @@ A projection of the Joe universe to the human universe, with files describing a 
 See [link](https://github.com/N0TD3R3K/Joelib.wiki.git)
 
 ## Joeglish Grammer
-[Joeglish Grammer](https://docs.google.com/document/d/1Rx4SeMx0YsXyF8olZoW1U-QVDSS87hqsPKRqKvyWZwk/edit?tab=t.0)
+Help to improve [Joeglish Grammer](https://docs.google.com/document/d/1Rx4SeMx0YsXyF8olZoW1U-QVDSS87hqsPKRqKvyWZwk/edit?tab=t.0)!
 
 ## The Great Joetsby - by F. Scott Fitzjoerald [Access Limited]
 https://docs.google.com/document/d/1pin7tftCd_qfugSu4F8u416EfudLGgKtUS5VQB3XRIg/edit?usp=sharing
