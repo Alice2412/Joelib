@@ -2,10 +2,10 @@
 A projection of the Joe universe to the human universe, with files describing a mysterious Joe to be simultaneously a language, all physical units and quantities, all chemical elements and everything else.
 
 ## Joe Wiki
-See Joelib/Wiki
+See [link](https://github.com/N0TD3R3K/Joelib.wiki.git)
 
 ## Joeglish Grammer
-https://docs.google.com/document/d/1Rx4SeMx0YsXyF8olZoW1U-QVDSS87hqsPKRqKvyWZwk/edit?tab=t.0
+[Joeglish Grammer](https://docs.google.com/document/d/1Rx4SeMx0YsXyF8olZoW1U-QVDSS87hqsPKRqKvyWZwk/edit?tab=t.0)
 
 ## The Great Joetsby - by F. Scott Fitzjoerald [Access Limited]
 https://docs.google.com/document/d/1pin7tftCd_qfugSu4F8u416EfudLGgKtUS5VQB3XRIg/edit?usp=sharing
