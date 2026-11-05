@@ -16,6 +16,6 @@ https://docs.google.com/spreadsheets/d/1SqQCbMp4ItG_DSiYUl_RrJprw53FhZlSQ-8mGRKm
 ## Collection of Joekemons
 https://docs.google.com/spreadsheets/d/1S_ddb_ZT8GrfKzUo3D6C8nZXgqY47dyfZkKU2SXYIM0/edit?gid=0#gid=0
 
-## Joelet Speech (To Joe, or not to Joe, that is the question) [Access Limited]
+## Joelet Speech [Complete]
 https://docs.google.com/document/d/13pYh0LqbIk-Se-KqCLpDiuw-YEe-KBjcc0Ycrk2IGtA/edit?tab=t.0
 
