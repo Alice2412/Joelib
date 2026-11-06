@@ -4,8 +4,8 @@ A projection of the Joe universe to the human universe, with files describing a 
 ## Joe Wiki
 See [link](https://github.com/N0TD3R3K/Joelib.wiki.git)
 
-## Joeglish Grammer
-Help to improve [Joeglish Grammer](https://docs.google.com/document/d/1Rx4SeMx0YsXyF8olZoW1U-QVDSS87hqsPKRqKvyWZwk/edit?tab=t.0)!
+## Joeglish Grammar
+Help to improve [Joeglish Grammar](https://docs.google.com/document/d/1Rx4SeMx0YsXyF8olZoW1U-QVDSS87hqsPKRqKvyWZwk/edit?tab=t.0)!
 
 ## The Great Joetsby - by F. Scott Fitzjoerald
 https://docs.google.com/document/d/1pin7tftCd_qfugSu4F8u416EfudLGgKtUS5VQB3XRIg/edit?usp=sharing
@@ -19,5 +19,5 @@ https://docs.google.com/spreadsheets/d/1S_ddb_ZT8GrfKzUo3D6C8nZXgqY47dyfZkKU2SXY
 ## Joelet Speech [Complete]
 https://docs.google.com/document/d/13pYh0LqbIk-Se-KqCLpDiuw-YEe-KBjcc0Ycrk2IGtA/edit?tab=t.0
 
-## JOESII Art
+## JOECII Art
 https://joecii.united-taylors.org/
