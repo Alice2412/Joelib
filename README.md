@@ -19,3 +19,5 @@ https://docs.google.com/spreadsheets/d/1S_ddb_ZT8GrfKzUo3D6C8nZXgqY47dyfZkKU2SXY
 ## Joelet Speech [Complete]
 https://docs.google.com/document/d/13pYh0LqbIk-Se-KqCLpDiuw-YEe-KBjcc0Ycrk2IGtA/edit?tab=t.0
 
+## JOESII Art
+https://joecii.united-taylors.org/
