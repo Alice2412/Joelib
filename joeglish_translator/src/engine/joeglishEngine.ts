@@ -1,6 +1,6 @@
-import { SEED_DICTIONARY } from './dictionary';
-import { WORDBANK } from './wordbank';
-import type { TranslationDirection, TranslationResult, WordMapping } from './types';
+import { SEED_DICTIONARY } from './dictionary.ts';
+import { WORDBANK } from './wordbank.ts';
+import type { TranslationDirection, TranslationResult, WordMapping } from './types.ts';
 
 function fnv1aHash(str: string): number {
   let h = 2166136261;
@@ -11,8 +11,7 @@ function fnv1aHash(str: string): number {
   return h >>> 0;
 }
 
-// Short words and common function words that must remain completely unchanged
-// per user instruction: "Short words like the, be that, those should remain unchanged. Only insert Joe for long words."
+// Short words and common particles that remain unchanged
 const PRESERVED_WORDS = new Set([
   'a', 'an', 'the', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 'by', 'from',
   'and', 'or', 'but', 'nor', 'so', 'yet',
@@ -109,7 +108,6 @@ export class JoeglishEngine {
     }
 
     // Short words (length <= 5 or in PRESERVED_WORDS): remain unchanged
-    // "Short words like the, be that, those should remain unchanged. Only insert Joe for long words."
     const syls = splitSyllables(w);
     if (w.length <= 5 || PRESERVED_WORDS.has(w) || syls.length < 2) {
       this.engToJoe.set(w, w);
@@ -118,7 +116,6 @@ export class JoeglishEngine {
     }
 
     // Long words (length >= 6 and at least 2 syllables):
-    // Replace one syllable with "joe" deterministically
     const h = fnv1aHash(w);
     let chosen = '';
 
@@ -135,12 +132,10 @@ export class JoeglishEngine {
     }
 
     if (!chosen) {
-      // If all regular syllables were taken, replace the onset syllable directly
       const cand = 'joe' + w.slice(syls[0].length);
       if (!this.joeToEng.has(cand) || this.joeToEng.get(cand) === w) {
         chosen = cand;
       } else {
-        // Fallback to unchanged to avoid injecting random phrases
         chosen = w;
       }
     }
@@ -153,34 +148,56 @@ export class JoeglishEngine {
   public getEnglishWord(rawWord: string): string {
     const j = rawWord.toLowerCase();
 
+    // 1. Direct reverse lookup
     if (this.joeToEng.has(j)) {
       return this.joeToEng.get(j)!;
     }
 
-    // If word contains "joe" and is unknown, search candidate syllables in wordbank
+    // 2. If word contains "joe", recover original English candidate
     if (j.includes('joe')) {
       const candidate = this.recoverEnglishFromJoe(j);
-      this.engToJoe.set(candidate, j);
-      this.joeToEng.set(j, candidate);
-      return candidate;
+      if (candidate) {
+        this.engToJoe.set(candidate, j);
+        this.joeToEng.set(j, candidate);
+        return candidate;
+      }
     }
 
-    // Word does not contain "joe": maps to itself
-    this.engToJoe.set(j, j);
-    this.joeToEng.set(j, j);
-    return j;
+    // 3. Word does not contain "joe" or cannot be mapped: return unchanged without corrupting maps
+    return rawWord;
   }
 
   private recoverEnglishFromJoe(joeWord: string): string {
-    // Attempt standard root recovery
-    const roots = ['en', 're', 'con', 'per', 'in', 'ex', 'de', 'pro'];
-    for (const r of roots) {
-      const cand = joeWord.replace(/joe/i, r);
-      if (!this.engToJoe.has(cand)) {
+    // Check candidate syllable replacements against indexed words
+    const commonPrefixes = ['en', 're', 'con', 'per', 'in', 'ex', 'de', 'pro', 'trans', 'com', 'sub', 'inter', 'gen', 'el', 'he', 'gat'];
+    for (const p of commonPrefixes) {
+      const cand = joeWord.replace(/joe/i, p);
+      if (this.engToJoe.has(cand) && this.engToJoe.get(cand) === joeWord) {
         return cand;
       }
     }
+
+    // Search wordbank words whose joeglish transformation equals joeWord
+    for (const w of WORDBANK) {
+      if (this.getJoeglishWord(w) === joeWord) {
+        return w;
+      }
+    }
+
+    // Fallback: replace joe with 'en' or onset
     return joeWord.replace(/joe/i, 'en');
+  }
+
+  public isJoeglishText(text: string): boolean {
+    if (!text.trim()) return false;
+    const words = text.toLowerCase().match(/[a-z]+/g) || [];
+    let joeCount = 0;
+    for (const w of words) {
+      if (w.includes('joe') || (this.joeToEng.has(w) && this.joeToEng.get(w) !== w)) {
+        joeCount++;
+      }
+    }
+    return joeCount > 0;
   }
 
   public translate(text: string, direction: TranslationDirection): TranslationResult {

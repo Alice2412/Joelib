@@ -1,9 +1,12 @@
 <script setup lang="ts">
 import { ref, watch, computed } from 'vue';
-import { engine } from '../engine/joeglishEngine';
-import type { TranslationDirection, TranslationResult } from '../engine/types';
+import { engine } from '../engine/joeglishEngine.ts';
+import type { TranslationDirection, TranslationResult } from '../engine/types.ts';
 
-const direction = ref<TranslationDirection>('en-to-joe');
+type SourceMode = 'detect' | 'en' | 'joe';
+
+const sourceMode = ref<SourceMode>('detect');
+const targetLang = ref<'en' | 'joe'>('joe');
 const sourceText = ref<string>('');
 const isSwapAnimating = ref<boolean>(false);
 const copyTooltip = ref<boolean>(false);
@@ -11,6 +14,25 @@ const isListening = ref<boolean>(false);
 const isSpeaking = ref<boolean>(false);
 const isLiked = ref<boolean>(false);
 const isDisliked = ref<boolean>(false);
+
+// Auto-detected language
+const detectedLang = computed<'en' | 'joe'>(() => {
+  if (!sourceText.value.trim()) return 'en';
+  return engine.isJoeglishText(sourceText.value) ? 'joe' : 'en';
+});
+
+// Active translation direction
+const effectiveDirection = computed<TranslationDirection>(() => {
+  if (sourceMode.value === 'detect') {
+    return detectedLang.value === 'joe' ? 'joe-to-en' : 'en-to-joe';
+  }
+  return sourceMode.value === 'joe' ? 'joe-to-en' : 'en-to-joe';
+});
+
+// Sync target language tab when source changes
+watch(effectiveDirection, (dir) => {
+  targetLang.value = dir === 'en-to-joe' ? 'joe' : 'en';
+}, { immediate: true });
 
 const translationResult = ref<TranslationResult>({
   translatedText: '',
@@ -20,14 +42,14 @@ const translationResult = ref<TranslationResult>({
 });
 
 function performTranslation() {
-  translationResult.value = engine.translate(sourceText.value, direction.value);
+  translationResult.value = engine.translate(sourceText.value, effectiveDirection.value);
 }
 
 watch(sourceText, () => {
   performTranslation();
 });
 
-watch(direction, () => {
+watch(effectiveDirection, () => {
   performTranslation();
 });
 
@@ -37,19 +59,51 @@ function handleSwap() {
     isSwapAnimating.value = false;
   }, 300);
 
+  const prevSource = sourceText.value;
   const prevTarget = translationResult.value.translatedText;
-  direction.value = direction.value === 'en-to-joe' ? 'joe-to-en' : 'en-to-joe';
-  sourceText.value = prevTarget;
+
+  // Swap language modes
+  if (effectiveDirection.value === 'en-to-joe') {
+    sourceMode.value = 'joe';
+    targetLang.value = 'en';
+  } else {
+    sourceMode.value = 'en';
+    targetLang.value = 'joe';
+  }
+
+  // Swap texts
+  sourceText.value = prevTarget || prevSource;
+  performTranslation();
 }
 
-function setDirection(newDir: TranslationDirection) {
-  if (direction.value !== newDir) {
-    direction.value = newDir;
+function selectSource(mode: SourceMode) {
+  sourceMode.value = mode;
+  if (mode === 'en') {
+    targetLang.value = 'joe';
+  } else if (mode === 'joe') {
+    targetLang.value = 'en';
   }
+  performTranslation();
+}
+
+function selectTarget(lang: 'en' | 'joe') {
+  targetLang.value = lang;
+  if (lang === 'en') {
+    sourceMode.value = 'joe';
+  } else {
+    sourceMode.value = 'en';
+  }
+  performTranslation();
 }
 
 function clearSource() {
   sourceText.value = '';
+  translationResult.value = {
+    translatedText: '',
+    mappings: [],
+    roundTripText: '',
+    isBijectiveRoundTrip: true
+  };
 }
 
 async function copyTranslation() {
@@ -84,9 +138,7 @@ function toggleVoiceInput() {
   const SpeechRecognition = (window as unknown as { SpeechRecognition?: any; webkitSpeechRecognition?: any }).SpeechRecognition 
     || (window as unknown as { SpeechRecognition?: any; webkitSpeechRecognition?: any }).webkitSpeechRecognition;
 
-  if (!SpeechRecognition) {
-    return;
-  }
+  if (!SpeechRecognition) return;
 
   if (isListening.value) {
     isListening.value = false;
@@ -98,23 +150,14 @@ function toggleVoiceInput() {
     recognition.lang = 'en-US';
     recognition.interimResults = false;
 
-    recognition.onstart = () => {
-      isListening.value = true;
-    };
-
+    recognition.onstart = () => { isListening.value = true; };
     recognition.onresult = (event: any) => {
       const transcript = event.results[0][0].transcript;
       sourceText.value = (sourceText.value ? sourceText.value + ' ' : '') + transcript;
       isListening.value = false;
     };
-
-    recognition.onerror = () => {
-      isListening.value = false;
-    };
-
-    recognition.onend = () => {
-      isListening.value = false;
-    };
+    recognition.onerror = () => { isListening.value = false; };
+    recognition.onend = () => { isListening.value = false; };
 
     recognition.start();
   } catch {
@@ -145,18 +188,33 @@ const charCount = computed(() => sourceText.value.length);
       <div class="lang-tabs source-tabs">
         <button
           class="lang-tab"
-          :class="{ active: direction === 'en-to-joe' }"
-          @click="setDirection('en-to-joe')"
+          :class="{ active: sourceMode === 'detect' }"
+          @click="selectSource('detect')"
+        >
+          <span v-if="sourceMode === 'detect' && sourceText.trim()">
+            {{ detectedLang === 'joe' ? 'Joeglish' : 'English' }} - detected
+          </span>
+          <span v-else>
+            Detect language
+          </span>
+        </button>
+
+        <button
+          class="lang-tab"
+          :class="{ active: sourceMode === 'en' }"
+          @click="selectSource('en')"
         >
           English
         </button>
+
         <button
           class="lang-tab"
-          :class="{ active: direction === 'joe-to-en' }"
-          @click="setDirection('joe-to-en')"
+          :class="{ active: sourceMode === 'joe' }"
+          @click="selectSource('joe')"
         >
           Joeglish
         </button>
+
         <button class="lang-dropdown-btn" title="More languages">
           <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
             <path d="M7 10l5 5 5-5z"/>
@@ -186,18 +244,20 @@ const charCount = computed(() => sourceText.value.length);
       <div class="lang-tabs target-tabs">
         <button
           class="lang-tab"
-          :class="{ active: direction === 'en-to-joe' }"
-          @click="setDirection('en-to-joe')"
+          :class="{ active: targetLang === 'joe' }"
+          @click="selectTarget('joe')"
         >
           Joeglish
         </button>
+
         <button
           class="lang-tab"
-          :class="{ active: direction === 'joe-to-en' }"
-          @click="setDirection('joe-to-en')"
+          :class="{ active: targetLang === 'en' }"
+          @click="selectTarget('en')"
         >
           English
         </button>
+
         <button class="lang-dropdown-btn" title="More languages">
           <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
             <path d="M7 10l5 5 5-5z"/>
@@ -211,7 +271,12 @@ const charCount = computed(() => sourceText.value.length);
       <!-- Source Panel -->
       <div class="panel source-panel">
         <div class="panel-header">
-          <span class="panel-lang-title">{{ direction === 'en-to-joe' ? 'English' : 'Joeglish' }}</span>
+          <span class="panel-lang-title">
+            {{ effectiveDirection === 'en-to-joe' ? 'English' : 'Joeglish' }}
+            <span v-if="sourceMode === 'detect' && sourceText.trim()" class="detected-badge">
+              (Detected)
+            </span>
+          </span>
           <button
             v-if="sourceText.length > 0"
             class="clear-btn"
@@ -273,7 +338,9 @@ const charCount = computed(() => sourceText.value.length);
       <!-- Target Panel -->
       <div class="panel target-panel">
         <div class="panel-header">
-          <span class="panel-lang-title">{{ direction === 'en-to-joe' ? 'Joeglish' : 'English' }}</span>
+          <span class="panel-lang-title">
+            {{ effectiveDirection === 'en-to-joe' ? 'Joeglish' : 'English' }}
+          </span>
         </div>
 
         <div class="textarea-wrapper">
@@ -516,6 +583,15 @@ const charCount = computed(() => sourceText.value.length);
   font-size: 13px;
   font-weight: 500;
   color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.detected-badge {
+  font-size: 11px;
+  color: var(--google-blue);
+  font-weight: 400;
 }
 
 .clear-btn {
@@ -644,7 +720,7 @@ const charCount = computed(() => sourceText.value.length);
   color: var(--text-secondary);
 }
 
-/* Real Google Translate Bottom Actions (History, Saved, Contribute) */
+/* Google Translate Bottom Actions (History, Saved, Contribute) */
 .gt-bottom-actions {
   display: flex;
   justify-content: center;
