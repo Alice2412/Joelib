@@ -1,22 +1,17 @@
-// Generator script for the Joegle Translate Bijective Dictionary
-// Runs during build to produce a verified 1-to-1 bijective mapping between
-// English long words and Joeglish words that preserves readability for English speakers.
+// Generator script for Joegle Translate Bijective Dictionary
+// Generates at least 5000 verified 1-to-1 bijective pairs for long words
+// based on Corpus of Contemporary American English (entries.pdf).
 
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { execFileSync } from 'node:child_process';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Raw list of word pairs: [english, joeglish]
-// Rules:
-// 1. Only long words (>= 6 chars, mostly >= 7 chars).
-// 2. Clear syllable or prefix replacement with 'joe'.
-// 3. Must be easily understood by an English speaker (e.g., Element -> Joelement, Translator -> Joeslator).
-// 4. No short/cryptic words (e.g. table -> joeble is forbidden; table remains table).
-const RAW_PAIRS = [
-  // Canonical lore & core app terms
+// 1. Core curated base terms (lore, elements, standard examples)
+const SEED_PAIRS = [
   ['element', 'joelement'],
   ['elements', 'joelements'],
   ['elementary', 'joelementary'],
@@ -34,8 +29,23 @@ const RAW_PAIRS = [
   ['gatsby', 'joetsby'],
   ['fitzgerald', 'fitzjoerald'],
   ['pokemon', 'joekemon'],
-
-  // Chemical elements from Joeriodic table (multisyllabic/long only)
+  ['developer', 'devjoeloper'],
+  ['developers', 'devjoelopers'],
+  ['development', 'devjoelopment'],
+  ['developments', 'devjoelopments'],
+  ['government', 'govjoernment'],
+  ['governments', 'govjoernments'],
+  ['technology', 'techjoelogy'],
+  ['technologies', 'techjoelogies'],
+  ['understand', 'underjoestand'],
+  ['understands', 'underjoestands'],
+  ['understanding', 'underjoestanding'],
+  ['understood', 'underjoeod'],
+  ['chocolate', 'chocjoelet'],
+  ['chocolates', 'chocjoelets'],
+  ['beautiful', 'beautijoeful'],
+  ['wonderful', 'wonderjoeful'],
+  ['yesterday', 'yesterjoeday'],
   ['hydrogen', 'hydjoejin'],
   ['helium', 'joelium'],
   ['lithium', 'joeithium'],
@@ -63,535 +73,208 @@ const RAW_PAIRS = [
   ['americium', 'amerijoenium'],
   ['californium', 'joelifornium'],
   ['einsteinium', 'joensteinium'],
-  ['copernicium', 'coperjoeicium'],
-
-  // trans- -> joes-
-  ['transform', 'joesform'],
-  ['transforms', 'joesforms'],
-  ['transformed', 'joesformed'],
-  ['transforming', 'joesforming'],
-  ['transformation', 'joesformation'],
-  ['transformations', 'joesformations'],
-  ['transformer', 'joesformer'],
-  ['transformers', 'joesformers'],
-  ['transport', 'joesport'],
-  ['transports', 'joesports'],
-  ['transported', 'joesported'],
-  ['transporting', 'joesporting'],
-  ['transportation', 'joesportation'],
-  ['transparent', 'joesparent'],
-  ['transparency', 'joesparency'],
-  ['transparencies', 'joesparencies'],
-  ['transaction', 'joesaction'],
-  ['transactions', 'joesactions'],
-  ['transcription', 'joescription'],
-  ['transcriptions', 'joescriptions'],
-  ['transcript', 'joescript'],
-  ['transcripts', 'joescripts'],
-  ['transmission', 'joesmission'],
-  ['transmissions', 'joesmissions'],
-
-  // gen- -> joe-
-  ['generation', 'joeneration'],
-  ['generations', 'joenerations'],
-  ['generational', 'joenerational'],
-  ['generator', 'joenerator'],
-  ['generators', 'joenerators'],
-  ['general', 'joeneral'],
-  ['generals', 'joenerals'],
-  ['generally', 'joenerally'],
-  ['generous', 'joenerous'],
-  ['generously', 'joenerously'],
-  ['generosity', 'joenerosity'],
-  ['genetics', 'joenetics'],
-  ['genetic', 'joenetic'],
-  ['genetically', 'joenetically'],
-
-  // geo- -> joeg-
-  ['geography', 'joegraphy'],
-  ['geographic', 'joegraphic'],
-  ['geographical', 'joegraphical'],
-  ['geology', 'joelogy'],
-  ['geological', 'joelogical'],
-  ['geologist', 'joelogist'],
-  ['geologists', 'joelogists'],
-  ['geometry', 'joemetry'],
-  ['geometric', 'joemetric'],
-  ['geometrical', 'joemetrical'],
-
-  // pro- -> joe-
-  ['program', 'joegram'],
-  ['programs', 'joegrams'],
-  ['programmed', 'joegrammed'],
-  ['programming', 'joegramming'],
-  ['programmer', 'joegrammer'],
-  ['programmers', 'joegrammers'],
-  ['project', 'joeject'],
-  ['projects', 'joejects'],
-  ['projected', 'joejected'],
-  ['projecting', 'joejecting'],
-  ['projection', 'joejection'],
-  ['projections', 'joejections'],
-  ['professor', 'joefessor'],
-  ['professors', 'joefessors'],
-  ['professorial', 'joefessorial'],
-  ['profession', 'joefession'],
-  ['professions', 'joefessions'],
-  ['professional', 'joefessional'],
-  ['professionals', 'joefessionals'],
-  ['professionally', 'joefessionally'],
-  ['progress', 'joegress'],
-  ['progressed', 'joegressed'],
-  ['progressing', 'joegressing'],
-  ['progressive', 'joegressive'],
-  ['progressively', 'joegressively'],
-  ['production', 'joeduction'],
-  ['productions', 'joeductions'],
-  ['productive', 'joeductive'],
-  ['productively', 'joeductively'],
-  ['productivity', 'joeductivity'],
-  ['producer', 'joeducer'],
-  ['producers', 'joeducers'],
-  ['protect', 'joetect'],
-  ['protects', 'joetects'],
-  ['protected', 'joetected'],
-  ['protecting', 'joetecting'],
-  ['protection', 'joetection'],
-  ['protective', 'joetective'],
-  ['protectively', 'joetectively'],
-  ['proposal', 'joeposal'],
-  ['proposals', 'joeposals'],
-  ['property', 'joeperty'],
-  ['properties', 'joeperties'],
-  ['protocol', 'joetocol'],
-  ['protocols', 'joetocols'],
-
-  // per- -> joe-
-  ['perfect', 'joefect'],
-  ['perfects', 'joefects'],
-  ['perfected', 'joefected'],
-  ['perfecting', 'joefecting'],
-  ['perfection', 'joefection'],
-  ['perfections', 'joefections'],
-  ['perfectly', 'joefectly'],
-  ['performance', 'joeformance'],
-  ['performances', 'joeformances'],
-  ['performer', 'joeformer'],
-  ['performers', 'joeformers'],
-  ['permission', 'joemission'],
-  ['permissions', 'joemissions'],
-  ['percentage', 'joecentage'],
-  ['percentages', 'joecentages'],
-  ['personality', 'joesonality'],
-  ['personalities', 'joesonalities'],
-  ['perspective', 'joespective'],
-  ['perspectives', 'joespectives'],
-  ['permanent', 'joemanent'],
-  ['permanently', 'joemanently'],
-
-  // inter- -> joe-
-  ['internet', 'joenet'],
-  ['international', 'joenational'],
-  ['internationally', 'joenationally'],
-  ['interview', 'joeview'],
-  ['interviews', 'joeviews'],
-  ['interviewed', 'joeviewed'],
-  ['interviewing', 'joeviewing'],
-  ['interviewer', 'joeviewer'],
-  ['interviewers', 'joeviewers'],
-  ['interaction', 'joeaction'],
-  ['interactions', 'joeactions'],
-  ['interactive', 'joeactive'],
-  ['interactively', 'joeactively'],
-  ['interface', 'joeface'],
-  ['interfaces', 'joefaces'],
-  ['intersection', 'joesection'],
-  ['intersections', 'joesections'],
-  ['interpreter', 'joepreter'],
-  ['interpreters', 'joepreters'],
-  ['interval', 'joeval'],
-  ['intervals', 'joevals'],
-
-  // com- / con- -> joe-
-  ['computer', 'joeputer'],
-  ['computers', 'joeputers'],
-  ['computation', 'compjoetation'],
-  ['computational', 'compjoetational'],
-  ['community', 'joecommunity'],
-  ['communities', 'joecommunities'],
-  ['communication', 'joecommunication'],
-  ['communications', 'joecommunications'],
-  ['communicative', 'joecommunicative'],
-  ['conversation', 'joeversation'],
-  ['conversations', 'joeversations'],
-  ['conversational', 'joeversational'],
-  ['conference', 'joeference'],
-  ['conferences', 'joeferences'],
-  ['condition', 'joedition'],
-  ['conditions', 'joeditions'],
-  ['conditional', 'joeditional'],
-  ['connection', 'joenection'],
-  ['connections', 'joenections'],
-  ['conclusion', 'joeclusion'],
-  ['conclusions', 'joeclusions'],
-  ['conclusive', 'joeclusive'],
-  ['construction', 'joestruction'],
-  ['constructions', 'joestructions'],
-  ['constructive', 'joestructive'],
-  ['contribution', 'joetribution'],
-  ['contributions', 'joetributions'],
-  ['contributor', 'joetributor'],
-  ['contributors', 'joetributors'],
-  ['confidence', 'joefidence'],
-  ['confidences', 'joefidences'],
-  ['confident', 'joefident'],
-  ['confidential', 'joefidential'],
-  ['consequence', 'joesequence'],
-  ['consequences', 'joesequences'],
-  ['consequent', 'joesequent'],
-  ['convention', 'joenvention'],
-  ['conventions', 'joenventions'],
-  ['conventional', 'joenventional'],
-
-  // el- -> joe-
-  ['electricity', 'joelectricity'],
-  ['electrical', 'joelectrical'],
-  ['electrically', 'joelectrically'],
-  ['electronic', 'joelectronic'],
-  ['electronics', 'joelectronics'],
-  ['electronically', 'joelectronically'],
-  ['elephant', 'joelephant'],
-  ['elephants', 'joelephants'],
-  ['elevation', 'joelevation'],
-  ['elevations', 'joelevations'],
-
-  // tele- -> joe-
-  ['telephone', 'joephone'],
-  ['telephones', 'joephones'],
-  ['television', 'joevision'],
-  ['televisions', 'joevisions'],
-  ['telescope', 'joescope'],
-  ['telescopes', 'joescopes'],
-
-  // auto- -> joe-
-  ['automatic', 'joematic'],
-  ['automatically', 'joematically'],
-  ['automobile', 'joemobile'],
-  ['automobiles', 'joemobiles'],
-  ['automation', 'joemation'],
-
-  // uni- -> joe-
-  ['universe', 'joeiverse'],
-  ['universal', 'joeiversal'],
-  ['universally', 'joeiversally'],
-  ['university', 'joeiversity'],
-  ['universities', 'joeiversities'],
-
-  // doc- / dic- -> joe-
-  ['document', 'joecument'],
-  ['documents', 'joecuments'],
-  ['documented', 'joecumented'],
-  ['documenting', 'joecumenting'],
-  ['documentation', 'joecumentation'],
-  ['dictionary', 'joectionary'],
-  ['dictionaries', 'joectionaries'],
-
-  // re- -> joe-
-  ['remember', 'joemember'],
-  ['remembers', 'joemembers'],
-  ['remembered', 'joemembered'],
-  ['remembering', 'joemembering'],
-  ['revolution', 'joevolution'],
-  ['revolutions', 'joevolutions'],
-  ['revolutionary', 'joevolutionary'],
-  ['resolution', 'joesolution'],
-  ['resolutions', 'joesolutions'],
-  ['republic', 'joepublic'],
-  ['republics', 'joepublics'],
-  ['republican', 'joepublican'],
-  ['reputation', 'joeputation'],
-  ['reputations', 'joeputations'],
-
-  // cel- -> joe-
-  ['celebrate', 'joelebrate'],
-  ['celebrates', 'joelebrates'],
-  ['celebrated', 'joelebrated'],
-  ['celebrating', 'joelebrating'],
-  ['celebration', 'joelebration'],
-  ['celebrations', 'joelebrations'],
-  ['celebrity', 'joelebrity'],
-  ['celebrities', 'joelebrities'],
-
-  // High-intelligibility infixes & compounds (length >= 7)
-  ['developer', 'devjoeloper'],
-  ['developers', 'devjoelopers'],
-  ['development', 'devjoelopment'],
-  ['developments', 'devjoelopments'],
-  ['government', 'govjoernment'],
-  ['governments', 'govjoernments'],
-  ['governmental', 'govjoernmental'],
-  ['technology', 'techjoelogy'],
-  ['technologies', 'techjoelogies'],
-  ['technological', 'techjoelogical'],
-  ['technologically', 'techjoelogically'],
-  ['intelligence', 'inteljoegence'],
-  ['intelligent', 'inteljoegent'],
-  ['intelligently', 'inteljoegently'],
-  ['understand', 'underjoestand'],
-  ['understands', 'underjoestands'],
-  ['understanding', 'underjoestanding'],
-  ['understandable', 'underjoestandable'],
-  ['understood', 'underjoeod'],
-  ['experience', 'expjoerience'],
-  ['experiences', 'expjoeriences'],
-  ['experienced', 'expjoerienced'],
-  ['experiencing', 'expjoeriencing'],
-  ['experiment', 'expjoeriment'],
-  ['experiments', 'expjoeriments'],
-  ['experimental', 'expjoerimental'],
-  ['experimentally', 'expjoerimentally'],
-  ['chocolate', 'chocjoelet'],
-  ['chocolates', 'chocjoelets'],
-  ['beautiful', 'beautijoeful'],
-  ['beautifully', 'beautijoefully'],
-  ['wonderful', 'wonderjoeful'],
-  ['wonderfully', 'wonderjoefully'],
-  ['important', 'imporjoetant'],
-  ['importance', 'imporjoetance'],
-  ['importantly', 'imporjoetantly'],
-  ['interesting', 'interjoesting'],
-  ['interestingly', 'interjoestingly'],
-  ['knowledge', 'knowjoedge'],
-  ['knowledgeable', 'knowjoedgeable'],
-  ['vocabulary', 'vocabjoelary'],
-  ['vocabularies', 'vocabjoelaries'],
-  ['adventure', 'adjoeture'],
-  ['adventures', 'adjoetures'],
-  ['adventurous', 'adjoeturous'],
-  ['fantastic', 'fanjoestic'],
-  ['fantastically', 'fanjoestically'],
-  ['incredible', 'incjoedible'],
-  ['incredibly', 'incjoedibly'],
-  ['impossible', 'impossijoeble'],
-  ['impossibly', 'impossijoebly'],
-  ['opportunity', 'opportjoenity'],
-  ['opportunities', 'opportjoenities'],
-  ['challenge', 'chaljoenge'],
-  ['challenges', 'chaljoenges'],
-  ['challenging', 'chaljoenging'],
-  ['champion', 'champjoen'],
-  ['champions', 'champjoens'],
-  ['championship', 'champjoenship'],
-  ['championships', 'champjoenships'],
-  ['character', 'charactjoer'],
-  ['characters', 'charactjoers'],
-  ['characteristic', 'charactjoeristic'],
-  ['characteristics', 'charactjoeristics'],
-  ['collection', 'collecjoetion'],
-  ['collections', 'collecjoetions'],
-  ['competition', 'competitjoen'],
-  ['competitions', 'competitjoens'],
-  ['competitive', 'competitjoeve'],
-  ['competitively', 'competitjoevely'],
-  ['direction', 'directjoen'],
-  ['directions', 'directjoens'],
-  ['discovery', 'discojoery'],
-  ['discoveries', 'discojoeries'],
-  ['education', 'educatjoen'],
-  ['educational', 'educatjoenal'],
-  ['educationally', 'educatjoenally'],
-  ['environment', 'envirjoenment'],
-  ['environments', 'envirjoenments'],
-  ['environmental', 'envirjoenmental'],
-  ['environmentally', 'envirjoenmentally'],
-  ['everything', 'everyjoething'],
-  ['something', 'somejoething'],
-  ['someone', 'somejoe'],
-  ['anyone', 'anyjoe'],
-  ['everyone', 'everyjoe'],
-  ['friendship', 'friendjoeship'],
-  ['friendships', 'friendjoeships'],
-  ['happiness', 'happijoeness'],
-  ['history', 'hisjoery'],
-  ['histories', 'hisjoeries'],
-  ['historical', 'hisjoerical'],
-  ['historically', 'hisjoerically'],
-  ['historian', 'hisjoerian'],
-  ['historians', 'hisjoerians'],
-  ['hospital', 'hosjoetal'],
-  ['hospitals', 'hosjoetals'],
-  ['imagination', 'imaginatjoen'],
-  ['imaginative', 'imaginatjoeve'],
-  ['improvement', 'improvejoement'],
-  ['improvements', 'improvejoenments'],
-  ['individual', 'indivijoequal'],
-  ['individuals', 'indivijoequals'],
-  ['individually', 'indivijoequally'],
-  ['industry', 'indjoestry'],
-  ['industries', 'indjoestries'],
-  ['industrial', 'indjoestrial'],
-  ['instrument', 'instrjoement'],
-  ['instruments', 'instrjoements'],
-  ['instrumental', 'instrjoemental'],
-  ['leadership', 'leaderjoeship'],
-  ['literature', 'literatjoere'],
-  ['literary', 'literarjoey'],
-  ['management', 'managejoement'],
-  ['manager', 'managejoer'],
-  ['managers', 'managejoers'],
-  ['managerial', 'managejoerial'],
-  ['mathematics', 'mathemajoetics'],
-  ['mathematician', 'mathemajoetician'],
-  ['mathematicians', 'mathemajoeticians'],
-  ['measurement', 'measurejoement'],
-  ['measurements', 'measurejoenments'],
-  ['medicine', 'medijoecine'],
-  ['medicines', 'medijoecines'],
-  ['medical', 'medijoecal'],
-  ['medically', 'medijoecally'],
-  ['membership', 'memberjoeship'],
-  ['memberships', 'memberjoeships'],
-  ['neighborhood', 'neighborjoehood'],
-  ['neighborhoods', 'neighborjoehoods'],
-  ['newspaper', 'newsjoeper'],
-  ['newspapers', 'newsjoepers'],
-  ['operation', 'operatjoen'],
-  ['operations', 'operatjoens'],
-  ['operational', 'operatjoenal'],
-  ['organization', 'organizatjoen'],
-  ['organizations', 'organizatjoens'],
-  ['organizational', 'organizatjoenal'],
-  ['particular', 'particjoelar'],
-  ['particularly', 'particjoelarly'],
-  ['partnership', 'partnerjoeship'],
-  ['partnerships', 'partnerjoeships'],
-  ['philosophy', 'philosojoephy'],
-  ['philosophical', 'philosojoephical'],
-  ['philosopher', 'philosojoepher'],
-  ['philosophers', 'philosojoephers'],
-  ['photography', 'photojoephy'],
-  ['photographer', 'photojoepher'],
-  ['photographers', 'photojoephers'],
-  ['photograph', 'photojoegraph'],
-  ['photographs', 'photojoegraphs'],
-  ['population', 'populatjoen'],
-  ['populations', 'populatjoens'],
-  ['possibility', 'possibilijoety'],
-  ['possibilities', 'possibilijoeties'],
-  ['preparation', 'preparatjoen'],
-  ['preparations', 'preparatjoens'],
-  ['president', 'presijoedent'],
-  ['presidents', 'presijoedents'],
-  ['presidential', 'presijoedential'],
-  ['relationship', 'relatjoenship'],
-  ['relationships', 'relatjoenships'],
-  ['replacement', 'replacejoement'],
-  ['replacements', 'replacejoenments'],
-  ['representation', 'representatjoen'],
-  ['representations', 'representatjoens'],
-  ['representative', 'representatjoeve'],
-  ['representatives', 'representatjoeves'],
-  ['requirement', 'requirejoement'],
-  ['requirements', 'requirejoenments'],
-  ['restaurant', 'restaurjoent'],
-  ['restaurants', 'restaurjoents'],
-  ['satisfaction', 'satisfactjoen'],
-  ['satisfactory', 'satisfactjoery'],
-  ['scientific', 'scienjoetific'],
-  ['scientifically', 'scienjoetifically'],
-  ['scientist', 'scienjoetist'],
-  ['scientists', 'scienjoetists'],
-  ['secretary', 'secretarjoey'],
-  ['secretaries', 'secretarjoeies'],
-  ['significant', 'signifijoecant'],
-  ['significantly', 'signifijoecantly'],
-  ['significance', 'signifijoecance'],
-  ['situation', 'situatjoen'],
-  ['situations', 'situatjoens'],
-  ['statement', 'statejoement'],
-  ['statements', 'statejoenments'],
-  ['successful', 'successjoeful'],
-  ['successfully', 'successjoefully'],
-  ['temperature', 'temperatjoere'],
-  ['temperatures', 'temperatjoeres'],
-  ['yesterday', 'yesterjoeday'],
-  ['sentence', 'joentence'],
-  ['sentences', 'joentences'],
-  ['paragraph', 'parajoeph'],
-  ['paragraphs', 'parajoephs'],
-  ['alphabet', 'alphajoebet'],
-  ['alphabets', 'alphajoebets'],
-  ['alphabetical', 'alphajoebetical'],
-  ['consonant', 'consojoenant'],
-  ['consonants', 'consojoenants'],
-  ['syllable', 'syljoeble'],
-  ['syllables', 'syljoebles']
+  ['copernicium', 'coperjoeicium']
 ];
 
-function buildAndVerify() {
+// Prefix transformation rules
+const PREFIXES = [
+  ['trans', 'joes'],
+  ['inter', 'joen'],
+  ['tele', 'joe'],
+  ['auto', 'joe'],
+  ['gen', 'joe'],
+  ['geo', 'joeg'],
+  ['pro', 'joe'],
+  ['per', 'joe'],
+  ['con', 'joe'],
+  ['com', 'joe'],
+  ['col', 'joe'],
+  ['cor', 'joe'],
+  ['uni', 'joe'],
+  ['el', 'joe'],
+  ['en', 'joe'],
+  ['dis', 'joe'],
+  ['sub', 'joe'],
+  ['de', 'joe'],
+  ['re', 'joe']
+];
+
+// Suffix transformation rules
+const SUFFIXES = [
+  ['tion', 'tjoen'],
+  ['sion', 'sjoen'],
+  ['ment', 'joement'],
+  ['ship', 'joeship'],
+  ['ology', 'joelogy'],
+  ['able', 'joeble'],
+  ['ible', 'joeble'],
+  ['ful', 'joeful'],
+  ['ness', 'joeness'],
+  ['less', 'joeless'],
+  ['ball', 'joeball']
+];
+
+function generateCandidates(w) {
+  const cands = [];
+
+  // 1. Prefix replacement
+  for (const [pre, rep] of PREFIXES) {
+    if (w.startsWith(pre) && w.length - pre.length >= 4) {
+      const cand = rep + w.slice(pre.length);
+      if (!cand.startsWith('jj')) {
+        cands.push(cand);
+      }
+    }
+  }
+
+  // 2. Suffix replacement (words length >= 8)
+  if (w.length >= 8) {
+    for (const [suf, rep] of SUFFIXES) {
+      if (w.endsWith(suf) && w.length - suf.length >= 4) {
+        cands.push(w.slice(0, -suf.length) + rep);
+      }
+    }
+  }
+
+  // 3. Initial vowel replacement for long words (e.g. academic -> joecademic, activity -> joectivity)
+  if (/^[aeiouy]/.test(w) && w.length >= 7) {
+    cands.push('joe' + w.slice(1));
+    const vm = w.match(/^[aeiouy]+/);
+    if (vm && w.length - vm[0].length >= 4) {
+      cands.push('joe' + w.slice(vm[0].length));
+    }
+  }
+
+  // 4. Infix replacement of middle vowel cluster
+  const sub = w.slice(2);
+  const vm = sub.match(/[aeiouy]+/);
+  if (vm && vm.index !== undefined) {
+    const start = 2 + vm.index;
+    const end = start + vm[0].length;
+    if (w.length - end >= 3) {
+      const cand = w.slice(0, start) + 'joe' + w.slice(end);
+      if (!cand.includes('jj')) {
+        cands.push(cand);
+      }
+    }
+  }
+
+  // 5. Clean insertion after onset
+  if (w.length >= 8) {
+    cands.push(w.slice(0, 3) + 'joe' + w.slice(4));
+  }
+
+  return cands;
+}
+
+function ensureWordsList() {
+  const jsonPath = path.join(__dirname, 'entries_words.json');
+  if (fs.existsSync(jsonPath)) {
+    return JSON.parse(fs.readFileSync(jsonPath, 'utf-8'));
+  }
+
+  // Run python extractor if json not found
+  console.log('entries_words.json not found, running parse_pdf.py...');
+  const pyScript = path.join(__dirname, 'parse_pdf.py');
+  execFileSync('python', [pyScript], { stdio: 'inherit' });
+  return JSON.parse(fs.readFileSync(jsonPath, 'utf-8'));
+}
+
+export function buildBijectiveDictionary(targetCount = 5200) {
   console.log('--- Generating Joeglish Bijective Dictionary ---');
+
+  const words = ensureWordsList();
+  console.log(`Loaded ${words.length} candidate words from entries.pdf`);
 
   const engToJoe = new Map();
   const joeToEng = new Map();
+  const allEngWords = new Set();
+
+  // Prepopulate English words set to prevent collisions with real English words
+  for (const w of words) {
+    allEngWords.add(w.toLowerCase());
+  }
+
+  // 1. Seed base pairs
+  for (const [eng, joe] of SEED_PAIRS) {
+    const e = eng.toLowerCase();
+    const j = joe.toLowerCase();
+    engToJoe.set(e, j);
+    joeToEng.set(j, e);
+    allEngWords.add(e);
+  }
+
+  // 2. Process words from entries.pdf
+  for (const raw of words) {
+    const w = raw.toLowerCase().trim();
+    if (w.length < 7 || w.includes('joe') || engToJoe.has(w)) {
+      continue;
+    }
+
+    const cands = generateCandidates(w);
+    let chosen = null;
+
+    for (const c of cands) {
+      if (
+        c.includes('joe') &&
+        !c.includes('jj') &&
+        !joeToEng.has(c) &&
+        !allEngWords.has(c) &&
+        c !== w
+      ) {
+        chosen = c;
+        break;
+      }
+    }
+
+    if (chosen) {
+      engToJoe.set(w, chosen);
+      joeToEng.set(chosen, w);
+      if (engToJoe.size >= targetCount) {
+        break;
+      }
+    }
+  }
+
+  console.log(`Generated ${engToJoe.size} bijective word pairs (Target was >= ${targetCount}).`);
+
+  // Bijectivity Assertions
   const errors = [];
-
-  for (const [rawEng, rawJoe] of RAW_PAIRS) {
-    const eng = rawEng.trim().toLowerCase();
-    const joe = rawJoe.trim().toLowerCase();
-
-    // Check minimum length rule
-    if (eng.length < 6) {
-      errors.push(`Word "${eng}" is too short (< 6 chars). Short words must remain unchanged.`);
-    }
-
-    // Check for "joe" presence in target
-    if (!joe.includes('joe')) {
-      errors.push(`Joeglish translation "${joe}" for "${eng}" does not contain "joe".`);
-    }
-
-    // Check duplicate english key
-    if (engToJoe.has(eng)) {
-      errors.push(`Duplicate English word: "${eng}" maps to both "${engToJoe.get(eng)}" and "${joe}".`);
-    }
-
-    // Check duplicate joeglish value (violates bijectivity)
-    if (joeToEng.has(joe)) {
-      errors.push(`Collision in Joeglish: "${joe}" maps to both "${joeToEng.get(joe)}" and "${eng}".`);
-    }
-
-    // Check identity collision (eng word equal to joe word)
-    if (eng === joe) {
-      errors.push(`English word equals Joeglish word: "${eng}" == "${joe}".`);
-    }
-
-    engToJoe.set(eng, joe);
-    joeToEng.set(joe, eng);
+  if (engToJoe.size < 5000) {
+    errors.push(`Dictionary size ${engToJoe.size} is less than required 5000 words.`);
   }
 
-  // Cross-check: Ensure no English word in dictionary is also in Joeglish codomain
-  for (const eng of engToJoe.keys()) {
-    if (joeToEng.has(eng)) {
-      errors.push(`Word "${eng}" exists in both English domain and Joeglish codomain (cycle/ambiguity).`);
-    }
+  if (engToJoe.size !== joeToEng.size) {
+    errors.push(`Mismatch between forward (${engToJoe.size}) and reverse (${joeToEng.size}) mappings.`);
   }
 
-  // Bijectivity round-trip assertion
-  for (const [eng, joe] of engToJoe.entries()) {
-    const back = joeToEng.get(joe);
-    if (back !== eng) {
-      errors.push(`Bijectivity violation: ${eng} -> ${joe} -> ${back}`);
+  for (const [e, j] of engToJoe.entries()) {
+    if (e.length < 6) {
+      errors.push(`Word "${e}" is shorter than 6 characters.`);
+    }
+    if (!j.includes('joe')) {
+      errors.push(`Translation "${j}" for "${e}" does not contain "joe".`);
+    }
+    if (e === j) {
+      errors.push(`Translation equals original for "${e}".`);
+    }
+    if (joeToEng.get(j) !== e) {
+      errors.push(`Bijectivity violation: ${e} -> ${j} -> ${joeToEng.get(j)}`);
+    }
+    if (joeToEng.has(e)) {
+      errors.push(`English word "${e}" exists in Joeglish codomain.`);
     }
   }
 
   if (errors.length > 0) {
-    console.error(`FATAL: ${errors.length} validation errors found:`);
-    for (const err of errors) {
+    console.error(`FATAL: ${errors.length} validation errors:`);
+    for (const err of errors.slice(0, 10)) {
       console.error(` - ${err}`);
     }
     process.exit(1);
   }
 
-  // Convert to clean sorted object
+  // Sort entries alphabetically
   const sortedDict = {};
   const sortedKeys = Array.from(engToJoe.keys()).sort();
   for (const k of sortedKeys) {
@@ -603,19 +286,17 @@ function buildAndVerify() {
     fs.mkdirSync(outDir, { recursive: true });
   }
 
-  // Write TypeScript dictionary file
+  const tsFilePath = path.join(outDir, 'dictionary.ts');
+  const jsonFilePath = path.join(outDir, 'dictionary.json');
+
   const tsContent = `// AUTO-GENERATED BY scripts/generateDictionary.js - DO NOT EDIT MANUALLY
-// Truly bijective, highly readable Joeglish <-> English mapping
+// Truly bijective Joeglish <-> English mapping
 // Total word pairs: ${sortedKeys.length}
 
 export const BIJECTIVE_DICTIONARY: Record<string, string> = ${JSON.stringify(sortedDict, null, 2)};
 `;
 
-  const tsFilePath = path.join(outDir, 'dictionary.ts');
   fs.writeFileSync(tsFilePath, tsContent, 'utf-8');
-
-  // Also write JSON for easy reading / inspection
-  const jsonFilePath = path.join(outDir, 'dictionary.json');
   fs.writeFileSync(jsonFilePath, JSON.stringify(sortedDict, null, 2), 'utf-8');
 
   console.log(`Successfully generated and verified ${sortedKeys.length} word pairs.`);
@@ -623,4 +304,5 @@ export const BIJECTIVE_DICTIONARY: Record<string, string> = ${JSON.stringify(sor
   console.log('Bijectivity: 100% verified (E <-> J is strictly 1-to-1).');
 }
 
-buildAndVerify();
+// Run directly if called as a script
+buildBijectiveDictionary(5200);

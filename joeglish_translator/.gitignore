@@ -22,3 +22,8 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Generated dictionary files
+src/engine/dictionary.ts
+src/engine/dictionary.json
+scripts/entries.pdf
