@@ -116,11 +116,11 @@
 .gt-logo-sub {
   font-family: 'Google Sans', 'Google Sans Text', Roboto, Arial, sans-serif;
   font-size: 22px;
-  color: #5f6368;
-  font-weight: 400;
+  color: #1f1f1f;
+  font-weight: 500;
   letter-spacing: -0.2px;
   line-height: 24px;
-  margin-left: 2px;
+  margin-left: 4px;
 }
 
 .gt-header-right {

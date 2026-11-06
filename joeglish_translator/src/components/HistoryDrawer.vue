@@ -168,7 +168,7 @@ function formatTime(ts: number): string {
 
 .drawer-header {
   padding: 12px 16px;
-  border-bottom: 1px solid #e0e2e5;
+  border-bottom: 1px solid #e8eaed;
   display: flex;
   align-items: center;
   justify-content: space-between;

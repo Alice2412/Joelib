@@ -573,21 +573,22 @@ defineExpose({
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  height: 36px;
-  padding: 0 16px;
+  height: 38px;
+  padding: 0 18px;
   font-family: 'Google Sans', 'Google Sans Text', Roboto, Arial, sans-serif;
   font-size: 14px;
   font-weight: 500;
   color: #1f1f1f;
   background: #ffffff;
-  border: 1px solid #747775;
-  border-radius: 8px;
+  border: 1px solid #dadce0;
+  border-radius: 100px;
   transition: all 0.15s ease;
   user-select: none;
 }
 
 .gt-pill:hover {
   background: #f0f4f9;
+  border-color: #c4c7c5;
 }
 
 .gt-pill.active {
@@ -603,7 +604,7 @@ defineExpose({
   justify-content: space-between;
   margin-bottom: 8px;
   padding: 0;
-  border-bottom: 1px solid #dadce0;
+  border-bottom: 1px solid #e8eaed;
 }
 
 .lang-tabs-group {
@@ -705,10 +706,10 @@ defineExpose({
   box-sizing: border-box;
 }
 
-/* Left Card: Source Box (White, rounded 16px, border #c4c7c5) */
+/* Left Card: Source Box (White, rounded 16px, soft light border #dadce0) */
 .source-card {
   background: #ffffff;
-  border: 1px solid #c4c7c5;
+  border: 1px solid #dadce0;
 }
 
 .source-card:focus-within {
@@ -908,7 +909,7 @@ defineExpose({
   width: 56px;
   height: 56px;
   border-radius: 50%;
-  border: 1px solid #747775;
+  border: 1px solid #dadce0;
   background: #ffffff;
   display: flex;
   align-items: center;

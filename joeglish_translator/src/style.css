@@ -7,9 +7,9 @@
   --gm3-sys-color-surface: #ffffff;
   --gm3-sys-color-surface-container: #f0f4f9;
   --gm3-sys-color-surface-container-low: #f8fafd;
-  --gm3-sys-color-surface-variant: #e1e3e1;
-  --gm3-sys-color-outline: #747775;
-  --gm3-sys-color-outline-variant: #c4c7c5;
+  --gm3-sys-color-surface-variant: #e8eaed;
+  --gm3-sys-color-outline: #dadce0;
+  --gm3-sys-color-outline-variant: #e8eaed;
   
   --gm3-sys-color-on-surface: #1f1f1f;
   --gm3-sys-color-on-surface-variant: #444746;
