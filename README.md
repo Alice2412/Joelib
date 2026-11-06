@@ -21,3 +21,6 @@ https://docs.google.com/document/d/13pYh0LqbIk-Se-KqCLpDiuw-YEe-KBjcc0Ycrk2IGtA/
 
 ## JOECII Art
 https://joecii.united-taylors.org/
+
+## Joegle Translate - Effortless conversion between English and Joeglish
+https://translate.united-taylors.org/
