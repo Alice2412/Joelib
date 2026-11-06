@@ -1,27 +1,23 @@
 :root {
-  --google-blue: #1a73e8;
-  --google-blue-hover: #1557b0;
-  --google-blue-light: #e8f0fe;
-  --google-red: #ea4335;
-  --google-yellow: #fbbc04;
-  --google-green: #34a853;
-  --google-green-dark: #137333;
-  --google-green-light: #e6f4ea;
+  --gm3-sys-color-primary: #0b57d0;
+  --gm3-sys-color-primary-hover: #0842a0;
+  --gm3-sys-color-primary-container: #d3e3fd;
+  --gm3-sys-color-on-primary-container: #041e49;
   
-  --color-surface: #ffffff;
-  --color-background: #ffffff;
-  --color-panel-bg: #f8f9fa;
-  --color-border: #dadce0;
-  --color-border-hover: #bdc1c6;
-  --color-border-focus: #1a73e8;
+  --gm3-sys-color-surface: #ffffff;
+  --gm3-sys-color-surface-container: #f0f4f9;
+  --gm3-sys-color-surface-container-low: #f8fafd;
+  --gm3-sys-color-surface-variant: #e1e3e1;
+  --gm3-sys-color-outline: #747775;
+  --gm3-sys-color-outline-variant: #c4c7c5;
   
-  --text-primary: #202124;
-  --text-secondary: #5f6368;
-  --text-disabled: #80868b;
+  --gm3-sys-color-on-surface: #1f1f1f;
+  --gm3-sys-color-on-surface-variant: #444746;
+  --gm3-sys-color-secondary-container: #c2e7ff;
+  --gm3-sys-color-on-secondary-fixed: #001d35;
   
-  --shadow-card: 0 1px 2px 0 rgba(60,64,67,0.3), 0 1px 3px 1px rgba(60,64,67,0.15);
-  --shadow-hover: 0 1px 3px 0 rgba(60,64,67,0.3), 0 4px 8px 3px rgba(60,64,67,0.15);
-  --font-family: 'Google Sans', Roboto, -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+  --font-family-google: 'Google Sans', 'Google Sans Text', Roboto, Arial, sans-serif;
+  --font-family-body: 'Google Sans Text', Roboto, Arial, sans-serif;
 }
 
 * {
@@ -31,14 +27,13 @@
 }
 
 body {
-  font-family: var(--font-family);
-  background-color: var(--color-background);
-  color: var(--text-primary);
+  font-family: var(--font-family-google);
+  background-color: var(--gm3-sys-color-surface);
+  color: var(--gm3-sys-color-on-surface);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   min-height: 100vh;
-  display: flex;
-  flex-direction: column;
+  margin: 0;
 }
 
 #app {
@@ -54,6 +49,7 @@ button {
   border: none;
   background: none;
   outline: none;
+  user-select: none;
 }
 
 textarea {
@@ -74,10 +70,10 @@ textarea {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #dadce0;
+  background: #c4c7c5;
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #bdc1c6;
+  background: #747775;
 }
