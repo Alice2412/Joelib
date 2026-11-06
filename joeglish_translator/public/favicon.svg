@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <defs>
+    <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#4285f4"/>
+      <stop offset="100%" stop-color="#1967d2"/>
+    </linearGradient>
+  </defs>
+  <!-- Google Translate Style Rounded Card -->
+  <rect x="2" y="2" width="60" height="60" rx="14" fill="url(#g)"/>
+  <!-- Translate 'G' / White Document Sheet -->
+  <path d="M12 18 C12 15 15 12 18 12 L38 12 C41 12 44 15 44 18 L44 38 C44 41 41 44 38 44 L18 44 C15 44 12 41 12 38 Z" fill="#ffffff" fill-opacity="0.95"/>
+  <!-- Blue Letter G / Joe J -->
+  <text x="21" y="34" font-family="'Google Sans', Roboto, sans-serif" font-weight="700" font-size="22" fill="#1a73e8">J</text>
+  <!-- Translation Chinese/Joe Overlay Symbol -->
+  <rect x="26" y="26" width="26" height="26" rx="8" fill="#1a73e8"/>
+  <text x="32" y="45" font-family="'Google Sans', Roboto, sans-serif" font-weight="700" font-size="16" fill="#ffffff">乔</text>
+</svg>
