@@ -1,7 +1,5 @@
-# JoeLang IDE
+# JoeLang Projection Console
 
-A buildless static prototype for the JoeLang online console. Open `dist/index.html` in a modern browser or serve the `dist/` directory with any static server.
+A buildless static console UI. Its language behavior is deliberately not embedded here: it loads the portable [JoeLang Language Pack](../joelang-language-pack/) from the stable hosted `joelang-core.js` URL.
 
-The current Projection Engine supports the beta JoeLang constructs demonstrated in the included starters: `joebject`, `has`, `does`, `when`, `otherwise`, `each`, `show`, `give`, `newjoe`, and receiver-method messages.
-
-The deployment manifest is in `.openai/hosting.json`.
+The package owns keyword data, diagnostics, formatting, JavaScript projection, and execution. This console owns only presentation and editor interactions, so compatible language-pack updates can improve it without a console UI release.

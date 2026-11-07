@@ -83,7 +83,8 @@
                 <header class="panel-title"><span class="panel-number">01</span><h3 id="source-title">Joe source</h3><span class="language-pill">.joe</span></header>
                 <div class="editor-wrap">
                   <div id="line-numbers" class="line-numbers" aria-hidden="true"></div>
-                  <textarea id="source-editor" spellcheck="false" aria-label="JoeLang source editor"></textarea>
+                  <textarea id="source-editor" spellcheck="false" aria-label="JoeLang source editor" aria-autocomplete="list" aria-controls="autocomplete-menu" aria-expanded="false"></textarea>
+                  <div id="autocomplete-menu" class="autocomplete-menu" role="listbox" aria-label="JoeLang keyword suggestions" hidden></div>
                 </div>
                 <footer class="panel-footer"><span id="source-stat">0 lines</span><span>UTF-8 / JoeLang 0.9</span></footer>
               </section>
@@ -182,6 +183,7 @@
         <span>Built for the Joe Team · Source vocabulary informed by Joelib</span>
       </footer>
     </div>
+    <script src="https://joelang-language-pack-20261107.nurturingpeony1.chatgpt.site/joelang-core.js"></script>
     <script src="app.js"></script>
   </body>
 </html>
