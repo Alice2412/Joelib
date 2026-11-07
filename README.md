@@ -48,7 +48,7 @@ The Joe Wiki, see the Wiki page of this repository.
   
   [JOECII Art Website](https://joecii.united-taylors.org/)
 
-- **Joekemon Joetinum**
+- **Joekemon Joetinum** by Matthew
   
   Joe Hack of Pokemon Platinum to add more Joe and ease of use in singleplayer
   
