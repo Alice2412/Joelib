@@ -58,13 +58,13 @@ The Joe Wiki, see the Wiki page of this repository.
   
   According to our understandings of the Joe universe, we modeled a coding language called the JoeLang, here's its first version of an online console.
   
-  [JoeLang Online Console Website]((https://joelang-studio-20261107.nurturingpeony1.chatgpt.site))
+  [JoeLang Online Console Website](https://joelang-ide-20261106.nurturingpeony1.chatgpt.site)
 
-- **JoeLang Version 0.9 - Online IDE** by Derek Li
+- **JoeLang Studio 0.9** by Derek Li
 
-  Continuing the Online Console, JoeLang now has its own IDE that is tested working, supporting JoeLang 0.9.
+  Continuing the Online Console, JoeLang now has its own IDE studio that is tested working, supporting JoeLang 0.9.
 
-  [JeoLang Online IDE Wesbite](https://joelang-ide-20261106.nurturingpeony1.chatgpt.site)
+  [JeoLang Online Studio Wesbite](https://joelang-studio-20261107.nurturingpeony1.chatgpt.site)
 
 - **JoeLang Language Pack 0.9** by Derek Li
 
