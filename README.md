@@ -24,3 +24,6 @@ https://joecii.united-taylors.org/
 
 ## Joegle Translate - Effortless conversion between English and Joeglish
 https://translate.united-taylors.org/
+
+## Joekemon Joetinum - Joe Hack of Pokemon Platinum to add more joe and ease of use in singleplayer
+https://drive.google.com/drive/folders/12B_Cm1olCZAFOI12fyxzr6oNSVxFYmd2?usp=sharing
