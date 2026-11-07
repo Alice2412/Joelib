@@ -1,29 +1,7 @@
-# Joelib
-A projection of the Joe universe to the human universe, with files describing a mysterious Joe to be simultaneously a language, all physical units and quantities, all chemical elements and everything else.
+# JoeLang IDE
 
-## Joe Wiki
-See [link](https://github.com/N0TD3R3K/Joelib.wiki.git)
+A buildless static prototype for the JoeLang online console. Open `dist/index.html` in a modern browser or serve the `dist/` directory with any static server.
 
-## Joeglish Grammar
-Help to improve [Joeglish Grammar](https://docs.google.com/document/d/1Rx4SeMx0YsXyF8olZoW1U-QVDSS87hqsPKRqKvyWZwk/edit?tab=t.0)!
+The current Projection Engine supports the beta JoeLang constructs demonstrated in the included starters: `joebject`, `has`, `does`, `when`, `otherwise`, `each`, `show`, `give`, `newjoe`, and receiver-method messages.
 
-## The Great Joetsby - by F. Scott Fitzjoerald
-https://docs.google.com/document/d/1pin7tftCd_qfugSu4F8u416EfudLGgKtUS5VQB3XRIg/edit?usp=sharing
-
-## The Joeriodic Table of Joelements
-https://docs.google.com/spreadsheets/d/1SqQCbMp4ItG_DSiYUl_RrJprw53FhZlSQ-8mGRKmorI/edit?gid=0#gid=0
-
-## Collection of Joekemons
-https://docs.google.com/spreadsheets/d/1S_ddb_ZT8GrfKzUo3D6C8nZXgqY47dyfZkKU2SXYIM0/edit?gid=0#gid=0
-
-## Joelet Speech [Complete]
-https://docs.google.com/document/d/13pYh0LqbIk-Se-KqCLpDiuw-YEe-KBjcc0Ycrk2IGtA/edit?tab=t.0
-
-## JOECII Art
-https://joecii.united-taylors.org/
-
-## Joegle Translate - Effortless conversion between English and Joeglish
-https://translate.united-taylors.org/
-
-## Joekemon Joetinum - Joe Hack of Pokemon Platinum to add more joe and ease of use in singleplayer
-https://drive.google.com/drive/folders/12B_Cm1olCZAFOI12fyxzr6oNSVxFYmd2?usp=sharing
+The deployment manifest is in `.openai/hosting.json`.
