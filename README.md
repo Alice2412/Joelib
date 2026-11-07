@@ -29,7 +29,7 @@ The Joe Wiki, see the Wiki page of this repository.
 
   [Joelet Speech Document](https://docs.google.com/document/d/13pYh0LqbIk-Se-KqCLpDiuw-YEe-KBjcc0Ycrk2IGtA/edit?tab=t.0)
 
-- **Collection of Joekemons** discovered by Matthew DeRoma
+- **Collection of Joekemons** discovered by Matthew
   
   Joekemons are a set of creatures recorded in the Joe universe, whether they are true or not still remains unknown.
   
