@@ -54,8 +54,20 @@ The Joe Wiki, see the Wiki page of this repository.
   
   [Joekemon Joetinum Files Folder](https://drive.google.com/drive/folders/12B_Cm1olCZAFOI12fyxzr6oNSVxFYmd2?usp=sharing)
 
-- **JoeLang Online Console Version 1**
+- **JoeLang Version 0.9 - Online Console** by Derek Li
   
   According to our understandings of the Joe universe, we modeled a coding language called the JoeLang, here's its first version of an online console.
   
-  [JoeLang Online Console Website](https://joelang-ide-20261106.nurturingpeony1.chatgpt.site)
+  [JoeLang Online Console Website]((https://joelang-studio-20261107.nurturingpeony1.chatgpt.site))
+
+- **JoeLang Version 0.9 - Online IDE** by Derek Li
+
+  Continuing the Online Console, JoeLang now has its own IDE that is tested working, supporting JoeLang 0.9.
+
+  [JeoLang Online IDE Wesbite](https://joelang-ide-20261106.nurturingpeony1.chatgpt.site)
+
+- **JoeLang Language Pack 0.9** by Derek Li
+
+  JoeLang now has its independent language pack, you can develop your own IDE based on this language pack. (This can also be found at Joelin/JoeLang/pack)
+
+  [Download JoeLang Language Pack 0.9](https://joelang-language-pack-20261107.nurturingpeony1.chatgpt.site)
