@@ -6,11 +6,13 @@ The Joe Wiki, see the Wiki page of this repository.
 
 ## 2. Literature, Language, Culture
 - **Joeglish Grammar** discovered by Joe Jin
-  A study on the Joeglish Grammar, an attempt to understand the Joe language.
+
+    A study on the Joeglish Grammar, an attempt to understand the Joe language.
   
-  [Joeglish Grammar Document](https://docs.google.com/document/d/1Rx4SeMx0YsXyF8olZoW1U-QVDSS87hqsPKRqKvyWZwk/edit?tab=t.0)
+    [Joeglish Grammar Document](https://docs.google.com/document/d/1Rx4SeMx0YsXyF8olZoW1U-QVDSS87hqsPKRqKvyWZwk/edit?tab=t.0)
 
 - **Joegle Translate** by Wayne Xu
+
   After studying the Joe language, we made this Joeglish translator to better understand Joeglish, and help establish an effortless conversion between English and Joeglish.
   
   [Joegle Translate Website](https://translate.united-taylors.org/)
