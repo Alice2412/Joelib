@@ -27,3 +27,6 @@ https://translate.united-taylors.org/
 
 ## Joekemon Joetinum - Joe Hack of Pokemon Platinum to add more joe and ease of use in singleplayer
 https://drive.google.com/drive/folders/12B_Cm1olCZAFOI12fyxzr6oNSVxFYmd2?usp=sharing
+
+## JoeLang Version 1 - Online JoeLang Console [New Domain Needed!]
+https://joelang-ide-20261106.nurturingpeony1.chatgpt.site
