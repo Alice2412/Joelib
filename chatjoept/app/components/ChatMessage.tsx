@@ -161,7 +161,7 @@ export function ChatMessage({
         {message.webSearch && (
           <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#1e1e1e] border border-white/5 text-[11px] text-[#10a37f] font-medium mb-2.5">
             <Globe className="w-3 h-3" />
-            <span>Searched the web via DeepSeek</span>
+            <span>Searched the web</span>
           </div>
         )}
 

@@ -165,7 +165,7 @@ export function ChatInput({
                   ? "bg-[#10a37f]/20 text-[#10a37f] border border-[#10a37f]/40 px-2.5 font-medium"
                   : "hover:bg-white/10 hover:text-white text-gray-400"
               }`}
-              title={webSearch ? "Web Search enabled" : "Enable DeepSeek Web Search"}
+              title={webSearch ? "Web Search enabled" : "Search the web"}
             >
               <Globe className="w-4 h-4" />
               {webSearch && <span>Search</span>}
@@ -212,7 +212,7 @@ export function ChatInput({
 
       {/* Disclaimer */}
       <p className="text-[11px] text-gray-400 text-center mt-2">
-        ChatJoePT powered by DeepSeek. Verify important scientific and Joe information.
+        ChatJoePT can make mistakes. Verify important scientific and Joe information.
       </p>
     </div>
   );

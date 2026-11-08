@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { ChevronDown, Check, Zap, Sparkles, BrainCircuit } from "lucide-react";
+import { ChevronDown, Check, Zap, Sparkles } from "lucide-react";
 
 interface ModelSelectorProps {
   currentModel: string;
@@ -8,23 +8,16 @@ interface ModelSelectorProps {
 
 const MODELS = [
   {
-    id: "deepseek-chat",
-    name: "DeepSeek-V3",
-    description: "Intelligent, fast general tasks in fluent Joeglish",
+    id: "jpt-6.1-sol",
+    name: "JPT-6.1 Sol",
+    description: "Flagship intelligence for deep analysis, intricate reasoning & math",
     icon: Sparkles,
-    badge: "Recommended",
+    badge: "Flagship",
   },
   {
-    id: "deepseek-reasoner",
-    name: "DeepSeek-R1",
-    description: "Deep mathematical reasoning & thought process",
-    icon: BrainCircuit,
-    badge: "Reasoning",
-  },
-  {
-    id: "deepseek-flash",
-    name: "DeepSeek Flash",
-    description: "Ultra-low latency streaming in the Joe Universe",
+    id: "jpt-6.1-terra",
+    name: "JPT-6.1 Terra",
+    description: "Fast, grounded everyday intelligence optimized for high efficiency",
     icon: Zap,
     badge: "Fast",
   },
@@ -45,13 +38,7 @@ export function ModelSelector({ currentModel, onSelectModel }: ModelSelectorProp
   }, []);
 
   const activeModel =
-    MODELS.find((m) => m.id === currentModel) || {
-      id: currentModel,
-      name: currentModel || "DeepSeek",
-      description: "Custom configured DeepSeek model",
-      icon: Sparkles,
-      badge: "Active",
-    };
+    MODELS.find((m) => m.id === currentModel) || MODELS[0];
 
   return (
     <div className="relative inline-block text-left" ref={dropdownRef}>
@@ -67,11 +54,11 @@ export function ModelSelector({ currentModel, onSelectModel }: ModelSelectorProp
       {isOpen && (
         <div className="absolute left-0 mt-2 w-72 rounded-2xl bg-[#212121] border border-white/10 shadow-2xl p-2 z-40 animate-in fade-in zoom-in-95 duration-150">
           <div className="text-[11px] font-semibold text-gray-400 px-3 py-1.5 uppercase tracking-wider">
-            DeepSeek Models
+            Model Selection
           </div>
           <div className="space-y-1">
             {MODELS.map((m) => {
-              const isSelected = currentModel === m.id;
+              const isSelected = activeModel.id === m.id;
               const Icon = m.icon;
               return (
                 <button
