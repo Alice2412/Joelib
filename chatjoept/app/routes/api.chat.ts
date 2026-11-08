@@ -18,6 +18,7 @@ export async function action({ request }: ActionFunctionArgs) {
 
   const {
     messages = [],
+    webSearch = false,
     apiKey: clientApiKey,
     baseUrl: clientBaseUrl,
     model: clientModel,
@@ -28,8 +29,12 @@ export async function action({ request }: ActionFunctionArgs) {
   const apiKey = (env.LLM_API_KEY || clientApiKey || "").trim();
   const rawBaseUrl = (env.LLM_API_URL || clientBaseUrl || "https://api.openai.com/v1").trim();
   const baseUrl = rawBaseUrl.endsWith("/") ? rawBaseUrl.slice(0, -1) : rawBaseUrl;
-  const model = (env.LLM_BASE_MODEL || clientModel || "gpt-4o").trim();
-  const systemPrompt = clientSystemPrompt || JOEGLISH_SYSTEM_PROMPT;
+  const model = (clientModel || env.LLM_BASE_MODEL || "deepseek-chat").trim();
+
+  let systemPrompt = clientSystemPrompt || JOEGLISH_SYSTEM_PROMPT;
+  if (webSearch) {
+    systemPrompt += `\n\n[DeepSeek Web Search Mode Activated]: You have access to real-time search knowledge. Synthesize current, accurate facts while speaking in your authentic Joeglish dialect. Formulate clear citations or sources where helpful.`;
+  }
 
   // Case 1: No API key configured -> Use interactive Joeglish streaming simulator
   if (!apiKey) {
@@ -64,7 +69,7 @@ export async function action({ request }: ActionFunctionArgs) {
     });
   }
 
-  // Case 2: API key is configured -> Stream from OpenAI-compatible endpoint
+  // Case 2: API key is configured -> Stream from DeepSeek / OpenAI-compatible endpoint
   try {
     const formattedMessages = [
       { role: "system", content: systemPrompt },
@@ -75,17 +80,24 @@ export async function action({ request }: ActionFunctionArgs) {
     ];
 
     const targetUrl = `${baseUrl}/chat/completions`;
+    const requestPayload: Record<string, any> = {
+      model,
+      messages: formattedMessages,
+      stream: true,
+    };
+
+    // If web search is activated, pass search flags supported by modern DeepSeek proxies
+    if (webSearch) {
+      requestPayload.web_search = true;
+    }
+
     const upstreamRes = await fetch(targetUrl, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${apiKey}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        model,
-        messages: formattedMessages,
-        stream: true,
-      }),
+      body: JSON.stringify(requestPayload),
     });
 
     if (!upstreamRes.ok) {
@@ -101,7 +113,7 @@ export async function action({ request }: ActionFunctionArgs) {
       const encoder = new TextEncoder();
       const errorStream = new ReadableStream({
         start(controller) {
-          const errMsg = `[Upstream Error ${upstreamRes.status}]: ${parsedError}`;
+          const errMsg = `[DeepSeek Error ${upstreamRes.status}]: ${parsedError}`;
           controller.enqueue(
             encoder.encode(
               `data: ${JSON.stringify({

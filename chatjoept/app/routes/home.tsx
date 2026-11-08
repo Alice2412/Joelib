@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import type { LoaderFunctionArgs } from "react-router";
 import { useLoaderData } from "react-router";
 import { PanelLeft, SquarePen, Share2 } from "lucide-react";
-import type { ChatSession, Message, UserSettings } from "~/types/chat";
+import type { ChatSession, Message, UserSettings, Attachment } from "~/types/chat";
 import {
   parseSessionCookie,
   verifySessionToken,
@@ -54,7 +54,7 @@ export default function Home() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [settings, setSettings] = useState<UserSettings>(DEFAULT_SETTINGS);
-  const [selectedModel, setSelectedModel] = useState("gpt-4o");
+  const [selectedModel, setSelectedModel] = useState("deepseek-chat");
 
   const abortControllerRef = useRef<AbortController | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -63,7 +63,9 @@ export default function Home() {
   useEffect(() => {
     const loadedSettings = getLocalSettings();
     setSettings(loadedSettings);
-    setSelectedModel(loadedSettings.model || "gpt-4o");
+    if (loadedSettings.model) {
+      setSelectedModel(loadedSettings.model);
+    }
 
     const loadedSessions = getLocalSessions();
     setSessions(loadedSessions);
@@ -140,10 +142,17 @@ export default function Home() {
     setIsStreaming(false);
   };
 
-  // Send message
-  const handleSendMessage = async (textToSend?: string) => {
-    const content = (textToSend || input).trim();
-    if (!content || isStreaming) return;
+  // Send message with optional file attachments and web search
+  const handleSendMessage = async (
+    textToSend?: string,
+    attachmentsToSend?: Attachment[],
+    webSearchToSend?: boolean
+  ) => {
+    const content = (textToSend !== undefined ? textToSend : input).trim();
+    const attachments = attachmentsToSend || [];
+    const webSearch = webSearchToSend || false;
+
+    if ((!content && attachments.length === 0) || isStreaming) return;
 
     setInput("");
 
@@ -154,7 +163,7 @@ export default function Home() {
     if (!targetSession) {
       const newSession: ChatSession = {
         id: "chat_" + Date.now().toString(36) + Math.random().toString(36).slice(2, 7),
-        title: content.slice(0, 36) || "New chat",
+        title: content.slice(0, 36) || (attachments[0]?.name ? `File: ${attachments[0].name}` : "New chat"),
         messages: [],
         model: selectedModel,
         createdAt: Date.now(),
@@ -170,8 +179,10 @@ export default function Home() {
     const userMessage: Message = {
       id: "msg_user_" + Date.now(),
       role: "user",
-      content,
+      content: content || (attachments.length > 0 ? `Attached: ${attachments.map(a => a.name).join(", ")}` : ""),
       createdAt: Date.now(),
+      attachments: attachments.length > 0 ? attachments : undefined,
+      webSearch,
     };
 
     const assistantMessage: Message = {
@@ -179,6 +190,7 @@ export default function Home() {
       role: "assistant",
       content: "",
       createdAt: Date.now(),
+      webSearch,
     };
 
     const updatedMessages = [...targetSession.messages, userMessage, assistantMessage];
@@ -186,7 +198,7 @@ export default function Home() {
     // Auto-title session from first user message
     const updatedTitle =
       targetSession.messages.length === 0
-        ? content.slice(0, 32) + (content.length > 32 ? "..." : "")
+        ? (content || attachments[0]?.name || "New chat").slice(0, 32)
         : targetSession.title;
 
     const nextSession: ChatSession = {
@@ -207,17 +219,29 @@ export default function Home() {
     abortControllerRef.current = abortController;
 
     try {
+      const formattedChatMessages = [...targetSession.messages, userMessage].map((m) => {
+        let fullText = m.content;
+        if (m.attachments && m.attachments.length > 0) {
+          const filesSummary = m.attachments
+            .map((att) => `[File Attachment: ${att.name}]\n\`\`\`\n${att.content}\n\`\`\``)
+            .join("\n\n");
+          fullText = fullText ? `${fullText}\n\n${filesSummary}` : filesSummary;
+        }
+        return {
+          role: m.role,
+          content: fullText,
+        };
+      });
+
       const res = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          messages: [...targetSession.messages, userMessage].map((m) => ({
-            role: m.role,
-            content: m.content,
-          })),
+          messages: formattedChatMessages,
+          webSearch,
           apiKey: settings.apiKey ? settings.apiKey : undefined,
           baseUrl: settings.baseUrl ? settings.baseUrl : undefined,
-          model: selectedModel && selectedModel !== "gpt-4o" ? selectedModel : undefined,
+          model: selectedModel || undefined,
           systemPrompt: settings.systemPrompt,
         }),
         signal: abortController.signal,
@@ -341,23 +365,28 @@ export default function Home() {
     if (msgs.length === 0) return;
 
     let lastUserPrompt = "";
+    let lastAttachments: Attachment[] | undefined;
+    let lastWebSearch = false;
     const trimmedMsgs = [...msgs];
 
     if (trimmedMsgs[trimmedMsgs.length - 1].role === "assistant") {
       trimmedMsgs.pop();
     }
     if (trimmedMsgs.length > 0 && trimmedMsgs[trimmedMsgs.length - 1].role === "user") {
-      lastUserPrompt = trimmedMsgs[trimmedMsgs.length - 1].content;
+      const u = trimmedMsgs[trimmedMsgs.length - 1];
+      lastUserPrompt = u.content;
+      lastAttachments = u.attachments;
+      lastWebSearch = !!u.webSearch;
       trimmedMsgs.pop();
     }
 
-    if (!lastUserPrompt) return;
+    if (!lastUserPrompt && (!lastAttachments || lastAttachments.length === 0)) return;
 
     const nextSession = { ...currentSession, messages: trimmedMsgs };
     const nextSessions = sessions.map((s) => (s.id === currentSession.id ? nextSession : s));
     updateSessions(nextSessions);
 
-    handleSendMessage(lastUserPrompt);
+    handleSendMessage(lastUserPrompt, lastAttachments, lastWebSearch);
   };
 
   // Handle Logout
@@ -476,11 +505,13 @@ export default function Home() {
           )}
         </div>
 
-        {/* Floating Bottom Input Dock */}
+        {/* Floating Bottom Input Dock with Attachments & Web Search */}
         <ChatInput
           input={input}
           setInput={setInput}
-          onSend={() => handleSendMessage()}
+          onSend={(attachedFiles, isWebSearch) =>
+            handleSendMessage(undefined, attachedFiles, isWebSearch)
+          }
           onStop={handleStopStreaming}
           isStreaming={isStreaming}
         />

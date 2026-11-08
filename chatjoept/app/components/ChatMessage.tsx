@@ -9,14 +9,23 @@ import {
   ChevronDown,
   ChevronRight,
   Brain,
+  FileText,
+  Globe,
+  ImageIcon,
 } from "lucide-react";
-import type { Message } from "~/types/chat";
+import type { Message, Attachment } from "~/types/chat";
 import { MarkdownRenderer } from "./MarkdownRenderer";
 
 interface ChatMessageProps {
   message: Message;
   isStreaming?: boolean;
   onRegenerate?: () => void;
+}
+
+function formatBytes(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
 function ThoughtBox({
@@ -36,7 +45,11 @@ function ThoughtBox({
         className="w-full px-3 py-2 flex items-center justify-between text-gray-400 hover:text-gray-200 transition-colors select-none"
       >
         <div className="flex items-center gap-2">
-          <Brain className={`w-3.5 h-3.5 ${isThinking ? "text-[#10a37f] animate-pulse" : "text-gray-400"}`} />
+          <Brain
+            className={`w-3.5 h-3.5 ${
+              isThinking ? "text-[#10a37f] animate-pulse" : "text-gray-400"
+            }`}
+          />
           <span className="font-medium text-gray-300">
             {isThinking ? "Thinking in Joeglish..." : "Thought process"}
           </span>
@@ -69,7 +82,6 @@ export function ChatMessage({
 
   const handleCopy = async () => {
     try {
-      // Strip <think> tags for clean copying
       const textToCopy = message.content.replace(/<think>[\s\S]*?<\/think>/g, "").trim();
       await navigator.clipboard.writeText(textToCopy || message.content);
       setCopied(true);
@@ -81,7 +93,33 @@ export function ChatMessage({
 
   if (isUser) {
     return (
-      <div className="w-full max-w-3xl mx-auto px-4 py-3 flex justify-end">
+      <div className="w-full max-w-3xl mx-auto px-4 py-3 flex flex-col items-end gap-1.5">
+        {/* Render Attached Files Preview */}
+        {message.attachments && message.attachments.length > 0 && (
+          <div className="flex flex-wrap gap-2 justify-end mb-1 max-w-[85%] sm:max-w-[75%]">
+            {message.attachments.map((file, i) => (
+              <div
+                key={i}
+                className="flex items-center gap-2 bg-[#252525] border border-white/10 rounded-xl px-3 py-1.5 text-xs text-gray-200 shadow-sm"
+              >
+                {file.type.startsWith("image/") ? (
+                  <ImageIcon className="w-3.5 h-3.5 text-[#10a37f]" />
+                ) : (
+                  <FileText className="w-3.5 h-3.5 text-[#10a37f]" />
+                )}
+                <div className="flex flex-col text-left">
+                  <span className="font-medium truncate max-w-[150px] text-[11px]">
+                    {file.name}
+                  </span>
+                  <span className="text-[10px] text-gray-400">
+                    {formatBytes(file.size)}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
         <div className="bg-[#2f2f2f] text-[#ececec] text-sm md:text-base px-4 py-2.5 rounded-[22px] max-w-[85%] sm:max-w-[75%] break-words whitespace-pre-wrap leading-relaxed shadow-sm">
           {message.content}
         </div>
@@ -119,6 +157,14 @@ export function ChatMessage({
 
       {/* Message Body */}
       <div className="flex-1 min-w-0">
+        {/* Web Search indicator if triggered */}
+        {message.webSearch && (
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#1e1e1e] border border-white/5 text-[11px] text-[#10a37f] font-medium mb-2.5">
+            <Globe className="w-3 h-3" />
+            <span>Searched the web via DeepSeek</span>
+          </div>
+        )}
+
         {thoughtText && (
           <ThoughtBox
             thought={thoughtText}

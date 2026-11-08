@@ -1,8 +1,17 @@
+export interface Attachment {
+  name: string;
+  size: number;
+  type: string;
+  content: string; // text or base64 data
+}
+
 export interface Message {
   id: string;
   role: "user" | "assistant" | "system";
   content: string;
   createdAt: number;
+  attachments?: Attachment[];
+  webSearch?: boolean;
 }
 
 export interface ChatSession {

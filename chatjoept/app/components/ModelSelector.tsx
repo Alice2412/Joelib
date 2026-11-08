@@ -8,25 +8,25 @@ interface ModelSelectorProps {
 
 const MODELS = [
   {
-    id: "gpt-4o",
-    name: "ChatJoePT 4o",
-    description: "Our smartest and most versatile Joe model",
+    id: "deepseek-chat",
+    name: "DeepSeek-V3",
+    description: "Intelligent, fast general tasks in fluent Joeglish",
     icon: Sparkles,
     badge: "Recommended",
   },
   {
-    id: "gpt-4o-mini",
-    name: "ChatJoePT 4o-mini",
-    description: "Fast, lightweight everyday tasks in Joeglish",
-    icon: Zap,
-    badge: "Fast",
-  },
-  {
-    id: "o1-mini",
-    name: "ChatJoePT o1-mini",
-    description: "Deep reasoning and mathematical derivatjoens",
+    id: "deepseek-reasoner",
+    name: "DeepSeek-R1",
+    description: "Deep mathematical reasoning & thought process",
     icon: BrainCircuit,
     badge: "Reasoning",
+  },
+  {
+    id: "deepseek-flash",
+    name: "DeepSeek Flash",
+    description: "Ultra-low latency streaming in the Joe Universe",
+    icon: Zap,
+    badge: "Fast",
   },
 ];
 
@@ -47,10 +47,10 @@ export function ModelSelector({ currentModel, onSelectModel }: ModelSelectorProp
   const activeModel =
     MODELS.find((m) => m.id === currentModel) || {
       id: currentModel,
-      name: `ChatJoePT (${currentModel})`,
-      description: "Custom configured model",
+      name: currentModel || "DeepSeek",
+      description: "Custom configured DeepSeek model",
       icon: Sparkles,
-      badge: "Custom",
+      badge: "Active",
     };
 
   return (
@@ -60,14 +60,14 @@ export function ModelSelector({ currentModel, onSelectModel }: ModelSelectorProp
         type="button"
         className="flex items-center gap-2 px-3 py-1.5 rounded-xl hover:bg-white/5 text-gray-200 hover:text-white font-semibold text-base transition-colors"
       >
-        <span>{activeModel.name}</span>
+        <span>ChatJoePT ({activeModel.name})</span>
         <ChevronDown className="w-4 h-4 text-gray-400 mt-0.5" />
       </button>
 
       {isOpen && (
         <div className="absolute left-0 mt-2 w-72 rounded-2xl bg-[#212121] border border-white/10 shadow-2xl p-2 z-40 animate-in fade-in zoom-in-95 duration-150">
           <div className="text-[11px] font-semibold text-gray-400 px-3 py-1.5 uppercase tracking-wider">
-            Model Selection
+            DeepSeek Models
           </div>
           <div className="space-y-1">
             {MODELS.map((m) => {
