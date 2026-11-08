@@ -58,4 +58,14 @@ The Joe Wiki, see the Wiki page of this repository.
 
   The coding language of Joe Universe called JoeLang, studied by Derek Li and made a projection to our own computers so we can learn and code normally with JoeLang. According to Gunmu, JoeLang is the prevalent coding language in Joe Universe, everyone uses JoeLang to code. Learn JoeLang at [JoeLang 1.0 User Manual](https://github.com/N0TD3R3K/Joelib/blob/main/JoeLang/documents/1.0/JoeLang_1.0_User_Manual.pdf)
 
+  [Download JoeLang Language Pack 0.9](https://joelang-language-pack-20261107.nurturingpeony1.chatgpt.site)
+
+- **ChatJoePT - The Official ChatGPT Replica** by Wayne Xu
+
+  A faithful ChatGPT replica designed for the Joe Universe, featuring streaming Joeglish dialogues, full KaTeX LaTeX math support, Cloudflare KV cross-device session synchronization, rolling 24-hour account usage limits, quota percentage tracking in Settings, and public unauthenticated chat sharing.
+
+  [ChatJoePT Web Application](https://chatjoept.waynexu2020.workers.dev)
+  
+- **JoeLang Studio Online** by Derek Li
+
   [JoeLang Studio Website](https://joelang-studio-1-0-20261107.nurturingpeony1.chatgpt.site)
