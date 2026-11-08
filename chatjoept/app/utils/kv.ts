@@ -241,11 +241,23 @@ export async function saveUserDialog(
   const kv = getKV(env);
   const index = await getUserDialogsIndex(email, env);
 
+  const dialogKey = `user:${email.toLowerCase()}:dialog:${dialog.id}`;
+  const existingIndex = index.dialogs.findIndex((d) => d.id === dialog.id);
+  const isNew = existingIndex === -1;
+
+  // Preserve existing shareId if not explicitly provided in passed dialog
+  let effectiveShareId = dialog.shareId;
+  if (!effectiveShareId && !isNew) {
+    const existing: ChatSession | null = await kv.get(dialogKey, "json");
+    if (existing?.shareId) {
+      effectiveShareId = existing.shareId;
+      dialog.shareId = effectiveShareId;
+    }
+  }
+
   const serialized = JSON.stringify(dialog);
   const sizeBytes = new TextEncoder().encode(serialized).length;
 
-  const existingIndex = index.dialogs.findIndex((d) => d.id === dialog.id);
-  const isNew = existingIndex === -1;
   const oldSizeBytes = isNew ? 0 : index.dialogs[existingIndex].sizeBytes || 0;
   const netBytesChange = sizeBytes - oldSizeBytes;
 
@@ -266,14 +278,13 @@ export async function saveUserDialog(
   }
 
   // 1. Save dialog key
-  const dialogKey = `user:${email.toLowerCase()}:dialog:${dialog.id}`;
   await kv.put(dialogKey, serialized);
 
   // If this dialog has been shared publicly, keep the shared link synced with all latest messages
-  if (dialog.shareId) {
-    const shareKey = `share:${dialog.shareId}`;
+  if (effectiveShareId) {
+    const shareKey = `share:${effectiveShareId}`;
     const shared: SharedDialog = {
-      id: dialog.shareId,
+      id: effectiveShareId,
       title: dialog.title || "Shared chat",
       model: dialog.model || "jpt-6.1-sol",
       createdAt: dialog.createdAt || Date.now(),

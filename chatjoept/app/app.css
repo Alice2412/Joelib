@@ -10,11 +10,10 @@ html,
 body {
   background-color: #212121;
   color: #ececec;
-  height: 100%;
+  min-height: 100%;
   width: 100%;
   margin: 0;
   padding: 0;
-  overflow: hidden;
 }
 
 /* Custom scrollbars matching ChatGPT */

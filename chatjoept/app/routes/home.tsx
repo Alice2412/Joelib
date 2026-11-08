@@ -632,12 +632,14 @@ export default function Home() {
         onClose={() => setShareModalOpen(false)}
         dialog={currentSession}
         onShareCreated={(shareId) => {
-          if (currentSession) {
-            const updatedSession = { ...currentSession, shareId };
-            const nextSessions = sessions.map((s) =>
-              s.id === currentSession.id ? updatedSession : s
-            );
-            updateSessions(nextSessions);
+          if (activeSessionId) {
+            setSessions((prev) => {
+              const updated = prev.map((s) =>
+                s.id === activeSessionId ? { ...s, shareId } : s
+              );
+              saveLocalSessions(updated);
+              return updated;
+            });
           }
         }}
       />
