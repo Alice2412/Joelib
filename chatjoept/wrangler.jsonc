@@ -4,6 +4,7 @@
  */
 {
 	"$schema": "node_modules/wrangler/config-schema.json",
+	"account_id": "51a849fd51f1774937bb4155db033c92",
 	"name": "chatjoept",
 	"compatibility_date": "2026-11-04",
 	"main": "./workers/app.ts",
@@ -16,7 +17,7 @@
 	"kv_namespaces": [
 		{
 			"binding": "CHATJOEPT_KV",
-			"id": "chatjoept_kv"
+			"id": "d87c99907ebc4fc0b58e538e62fd6c1d"
 		}
 	],
 	"observability": {

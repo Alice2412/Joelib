@@ -71,3 +71,9 @@ The Joe Wiki, see the Wiki page of this repository.
   JoeLang now has its independent language pack, you can develop your own IDE based on this language pack. (This can also be found at Joelin/JoeLang/pack)
 
   [Download JoeLang Language Pack 0.9](https://joelang-language-pack-20261107.nurturingpeony1.chatgpt.site)
+
+- **ChatJoePT - The Official ChatGPT Replica** by Wayne Xu
+
+  A faithful ChatGPT replica designed for the Joe Universe, featuring streaming Joeglish dialogues, full KaTeX LaTeX math support, Cloudflare KV cross-device session synchronization, rolling 24-hour account usage limits, quota percentage tracking in Settings, and public unauthenticated chat sharing.
+
+  [ChatJoePT Web Application](https://chatjoept.waynexu2020.workers.dev)
