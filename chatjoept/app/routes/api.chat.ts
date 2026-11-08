@@ -24,7 +24,7 @@ export async function action({ request }: ActionFunctionArgs) {
 
   // Server-only provider credentials & endpoint (strictly non-overridable by client)
   const apiKey = (env.LLM_API_KEY || "").trim();
-  const rawBaseUrl = (env.LLM_API_URL || "https://api.openai.com/v1").trim();
+  const rawBaseUrl = (env.LLM_API_URL || "https://api.deepseek.com").trim();
   const baseUrl = rawBaseUrl.endsWith("/") ? rawBaseUrl.slice(0, -1) : rawBaseUrl;
 
   // Map JPT-6.1 Sol and JPT-6.1 Terra internally with differing effort
@@ -118,10 +118,17 @@ export async function action({ request }: ActionFunctionArgs) {
         // Keep raw text
       }
 
+      // Sanitize error string to prevent leaking provider identity or URLs
+      const cleanError = String(parsedError)
+        .replace(/https?:\/\/[^\s]+/g, "")
+        .replace(/openai/gi, "ChatJoePT")
+        .replace(/deepseek/gi, "ChatJoePT")
+        .trim();
+
       const encoder = new TextEncoder();
       const errorStream = new ReadableStream({
         start(controller) {
-          const errMsg = `[ChatJoePT Error ${upstreamRes.status}]: ${parsedError}`;
+          const errMsg = `[ChatJoePT Error ${upstreamRes.status}]: ${cleanError}`;
           controller.enqueue(
             encoder.encode(
               `data: ${JSON.stringify({

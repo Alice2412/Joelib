@@ -9,6 +9,38 @@ interface MarkdownRendererProps {
   content: string;
 }
 
+export function preprocessLaTeX(content: string): string {
+  if (!content) return "";
+
+  // 1. Convert standard LaTeX block math: \[ ... \] -> $$ ... $$
+  let processed = content.replace(/\\\[([\s\S]*?)\\\]/g, (_, math) => {
+    return `\n\n$$\n${math.trim()}\n$$\n\n`;
+  });
+
+  // 2. Convert standard LaTeX inline math: \( ... \) -> $ ... $
+  processed = processed.replace(/\\\(([\s\S]*?)\\\)/g, (_, math) => {
+    return `$${math.trim()}$`;
+  });
+
+  // 3. Fallback for unescaped standalone bracketed math blocks: [ \command ... ] or [ math ]
+  processed = processed.replace(
+    /(?:^|\n)\s*\[\s*([\s\S]*?(?:\\|\^|_|=|frac|partial|boxed|ln|sqrt|int|sum|prod)[\s\S]*?)\s*\](?:\s*$\n?)/gm,
+    (_, math) => {
+      return `\n\n$$\n${math.trim()}\n$$\n\n`;
+    }
+  );
+
+  // 4. Fallback for unescaped parenthesized math expressions like (f_{xy}) or (\alpha)
+  processed = processed.replace(
+    /\(([a-zA-Z]_[a-zA-Z0-9{}]+|\\[a-zA-Z]+[^)]*)\)/g,
+    (_, math) => {
+      return `$${math.trim()}$`;
+    }
+  );
+
+  return processed;
+}
+
 function CodeBlock({
   className,
   children,
@@ -73,11 +105,16 @@ function CodeBlock({
 }
 
 export function MarkdownRenderer({ content }: MarkdownRendererProps) {
+  const processedContent = preprocessLaTeX(content);
+
   return (
     <div className="markdown-prose space-y-3 leading-relaxed text-[#ececec] text-sm md:text-base break-words">
       <ReactMarkdown
-        remarkPlugins={[remarkGfm, remarkMath]}
-        rehypePlugins={[rehypeKatex]}
+        remarkPlugins={[
+          remarkGfm,
+          [remarkMath as any, { singleDollarTextMath: true }],
+        ]}
+        rehypePlugins={[[rehypeKatex as any, { output: "htmlAndMathml", throwOnError: false }]]}
         components={{
           code: CodeBlock as any,
           p: ({ children }) => <p className="mb-2 last:mb-0 leading-7">{children}</p>,
@@ -121,7 +158,7 @@ export function MarkdownRenderer({ content }: MarkdownRendererProps) {
           ),
         }}
       >
-        {content}
+        {processedContent}
       </ReactMarkdown>
     </div>
   );
