@@ -24,10 +24,11 @@ export async function action({ request }: ActionFunctionArgs) {
     systemPrompt: clientSystemPrompt,
   } = body;
 
-  const apiKey = (clientApiKey || env.LLM_API_KEY || "").trim();
-  const rawBaseUrl = (clientBaseUrl || env.LLM_API_URL || "https://api.openai.com/v1").trim();
+  // Prioritize server environment variables to prevent API key read/write leakage
+  const apiKey = (env.LLM_API_KEY || clientApiKey || "").trim();
+  const rawBaseUrl = (env.LLM_API_URL || clientBaseUrl || "https://api.openai.com/v1").trim();
   const baseUrl = rawBaseUrl.endsWith("/") ? rawBaseUrl.slice(0, -1) : rawBaseUrl;
-  const model = (clientModel || env.LLM_BASE_MODEL || "gpt-4o").trim();
+  const model = (env.LLM_BASE_MODEL || clientModel || "gpt-4o").trim();
   const systemPrompt = clientSystemPrompt || JOEGLISH_SYSTEM_PROMPT;
 
   // Case 1: No API key configured -> Use interactive Joeglish streaming simulator

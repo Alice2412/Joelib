@@ -36,8 +36,8 @@ export function SettingsModal({
     e.preventDefault();
     onSave({
       apiKey: apiKey.trim(),
-      baseUrl: baseUrl.trim() || "https://api.openai.com/v1",
-      model: model.trim() || "gpt-4o",
+      baseUrl: baseUrl.trim(),
+      model: model.trim(),
       systemPrompt,
     });
     setSavedNotice(true);
@@ -49,8 +49,8 @@ export function SettingsModal({
 
   const handleReset = () => {
     setApiKey("");
-    setBaseUrl(DEFAULT_SETTINGS.baseUrl);
-    setModel(DEFAULT_SETTINGS.model);
+    setBaseUrl("");
+    setModel("");
     setSystemPrompt(DEFAULT_SETTINGS.systemPrompt);
   };
 

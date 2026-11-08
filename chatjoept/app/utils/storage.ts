@@ -7,8 +7,8 @@ const SETTINGS_KEY = "chatjoept_settings_v1";
 
 export const DEFAULT_SETTINGS: UserSettings = {
   apiKey: "",
-  baseUrl: "https://api.openai.com/v1",
-  model: "gpt-4o",
+  baseUrl: "",
+  model: "",
   systemPrompt: JOEGLISH_SYSTEM_PROMPT,
   theme: "dark",
 };
