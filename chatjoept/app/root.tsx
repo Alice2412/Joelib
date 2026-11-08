@@ -42,7 +42,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Meta />
         <Links />
       </head>
-      <body className="bg-[#212121] text-[#ececec] font-sans antialiased overflow-hidden h-screen w-screen selection:bg-[#10a37f]/30">
+      <body className="bg-[#212121] text-[#ececec] font-sans antialiased selection:bg-[#10a37f]/30">
         {children}
         <ScrollRestoration />
         <Scripts />
