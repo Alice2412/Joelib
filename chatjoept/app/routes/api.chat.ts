@@ -19,22 +19,20 @@ export async function action({ request }: ActionFunctionArgs) {
   const {
     messages = [],
     webSearch = false,
-    apiKey: clientApiKey,
-    baseUrl: clientBaseUrl,
     model: clientModel,
-    systemPrompt: clientSystemPrompt,
   } = body;
 
-  // Prioritize server environment variables to prevent API key read/write leakage
-  const apiKey = (env.LLM_API_KEY || clientApiKey || "").trim();
-  const rawBaseUrl = (env.LLM_API_URL || clientBaseUrl || "https://api.openai.com/v1").trim();
+  // Server-only provider credentials & endpoint (strictly non-overridable by client)
+  const apiKey = (env.LLM_API_KEY || "").trim();
+  const rawBaseUrl = (env.LLM_API_URL || "https://api.openai.com/v1").trim();
   const baseUrl = rawBaseUrl.endsWith("/") ? rawBaseUrl.slice(0, -1) : rawBaseUrl;
 
   // Map JPT-6.1 Sol and JPT-6.1 Terra internally with differing effort
   const requestedModel = (clientModel || "jpt-6.1-sol").toLowerCase();
   const targetModel = (env.LLM_BASE_MODEL || "deepseek-chat").trim();
 
-  let systemPrompt = clientSystemPrompt || JOEGLISH_SYSTEM_PROMPT;
+  // Immutable Joeglish system prompt (strictly non-overridable by client)
+  let systemPrompt = JOEGLISH_SYSTEM_PROMPT;
 
   // Configure effort difference between JPT-6.1 Sol and JPT-6.1 Terra
   if (requestedModel === "jpt-6.1-sol") {

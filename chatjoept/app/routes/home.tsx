@@ -53,7 +53,6 @@ export default function Home() {
   const [isStreaming, setIsStreaming] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const [settings, setSettings] = useState<UserSettings>(DEFAULT_SETTINGS);
   const [selectedModel, setSelectedModel] = useState("jpt-6.1-sol");
 
   const abortControllerRef = useRef<AbortController | null>(null);
@@ -62,7 +61,6 @@ export default function Home() {
   // Load persisted sessions and settings on client mount
   useEffect(() => {
     const loadedSettings = getLocalSettings();
-    setSettings(loadedSettings);
     if (loadedSettings.model) {
       setSelectedModel(loadedSettings.model);
     }
@@ -239,10 +237,7 @@ export default function Home() {
         body: JSON.stringify({
           messages: formattedChatMessages,
           webSearch,
-          apiKey: settings.apiKey ? settings.apiKey : undefined,
-          baseUrl: settings.baseUrl ? settings.baseUrl : undefined,
-          model: selectedModel || undefined,
-          systemPrompt: settings.systemPrompt,
+          model: selectedModel,
         }),
         signal: abortController.signal,
       });
@@ -521,14 +516,13 @@ export default function Home() {
       <SettingsModal
         isOpen={settingsOpen}
         onClose={() => setSettingsOpen(false)}
-        settings={settings}
-        onSave={(updated) => {
-          const s = saveLocalSettings(updated);
-          setSettings(s);
-          if (updated.model) {
-            setSelectedModel(updated.model);
-          }
+        userEmail={userEmail}
+        onClearChats={() => {
+          updateSessions([]);
+          setActiveSessionIdState(null);
+          setActiveSessionId(null);
         }}
+        onLogout={handleLogout}
       />
     </div>
   );

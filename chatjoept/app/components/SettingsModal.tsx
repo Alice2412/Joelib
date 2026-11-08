@@ -1,67 +1,56 @@
-import React, { useState, useEffect } from "react";
-import { X, Eye, EyeOff, RotateCcw, Save, Key, Globe, Sparkles } from "lucide-react";
-import type { UserSettings } from "~/types/chat";
-import { DEFAULT_SETTINGS } from "~/utils/storage";
+import React, { useState } from "react";
+import {
+  X,
+  Sparkles,
+  Trash2,
+  LogOut,
+  Moon,
+  Sun,
+  Laptop,
+  ShieldCheck,
+  Check,
+} from "lucide-react";
 
 interface SettingsModalProps {
   isOpen: boolean;
   onClose: () => void;
-  settings: UserSettings;
-  onSave: (settings: Partial<UserSettings>) => void;
+  userEmail: string;
+  onClearChats: () => void;
+  onLogout: () => void;
+  theme?: "dark" | "light" | "system";
+  onThemeChange?: (theme: "dark" | "light" | "system") => void;
 }
 
 export function SettingsModal({
   isOpen,
   onClose,
-  settings,
-  onSave,
+  userEmail,
+  onClearChats,
+  onLogout,
+  theme = "dark",
+  onThemeChange,
 }: SettingsModalProps) {
-  const [apiKey, setApiKey] = useState(settings.apiKey);
-  const [baseUrl, setBaseUrl] = useState(settings.baseUrl);
-  const [model, setModel] = useState(settings.model);
-  const [systemPrompt, setSystemPrompt] = useState(settings.systemPrompt);
-  const [showKey, setShowKey] = useState(false);
-  const [savedNotice, setSavedNotice] = useState(false);
-
-  useEffect(() => {
-    setApiKey(settings.apiKey);
-    setBaseUrl(settings.baseUrl);
-    setModel(settings.model);
-    setSystemPrompt(settings.systemPrompt);
-  }, [settings, isOpen]);
+  const [activeTab, setActiveTab] = useState<"general" | "account" | "about">("general");
+  const [showClearConfirm, setShowClearConfirm] = useState(false);
+  const [clearedNotice, setClearedNotice] = useState(false);
 
   if (!isOpen) return null;
 
-  const handleSave = (e: React.FormEvent) => {
-    e.preventDefault();
-    onSave({
-      apiKey: apiKey.trim(),
-      baseUrl: baseUrl.trim(),
-      model: model.trim(),
-      systemPrompt,
-    });
-    setSavedNotice(true);
-    setTimeout(() => {
-      setSavedNotice(false);
-      onClose();
-    }, 600);
-  };
-
-  const handleReset = () => {
-    setApiKey("");
-    setBaseUrl("");
-    setModel("");
-    setSystemPrompt(DEFAULT_SETTINGS.systemPrompt);
+  const handleClear = () => {
+    onClearChats();
+    setShowClearConfirm(false);
+    setClearedNotice(true);
+    setTimeout(() => setClearedNotice(false), 2000);
   };
 
   return (
     <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
-      <div className="bg-[#212121] border border-white/10 rounded-2xl w-full max-w-xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+      <div className="bg-[#212121] border border-white/10 rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-white/10">
           <div className="flex items-center gap-2">
             <Sparkles className="w-5 h-5 text-[#10a37f]" />
-            <h2 className="text-base font-semibold text-white">ChatJoePT Settings</h2>
+            <h2 className="text-base font-semibold text-white">Settings</h2>
           </div>
           <button
             onClick={onClose}
@@ -71,131 +60,213 @@ export function SettingsModal({
           </button>
         </div>
 
-        {/* Form Body */}
-        <form onSubmit={handleSave} className="p-6 overflow-y-auto space-y-5 text-sm">
-          {/* API Key */}
-          <div>
-            <div className="flex items-center justify-between mb-1.5">
-              <label
-                htmlFor="api-key-input"
-                className="text-xs font-medium text-gray-300 flex items-center gap-1.5"
-              >
-                <Key className="w-3.5 h-3.5 text-gray-400" />
-                OpenAI API Key (or custom endpoint key)
-              </label>
-              <span className="text-[11px] text-gray-400">Stored locally in your browser</span>
+        {/* Tab Navigation */}
+        <div className="flex border-b border-white/10 px-6 text-xs font-medium">
+          <button
+            type="button"
+            onClick={() => setActiveTab("general")}
+            className={`py-3 px-3 border-b-2 transition-colors ${
+              activeTab === "general"
+                ? "border-[#10a37f] text-white"
+                : "border-transparent text-gray-400 hover:text-gray-200"
+            }`}
+          >
+            General
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab("account")}
+            className={`py-3 px-3 border-b-2 transition-colors ${
+              activeTab === "account"
+                ? "border-[#10a37f] text-white"
+                : "border-transparent text-gray-400 hover:text-gray-200"
+            }`}
+          >
+            Account & Data
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab("about")}
+            className={`py-3 px-3 border-b-2 transition-colors ${
+              activeTab === "about"
+                ? "border-[#10a37f] text-white"
+                : "border-transparent text-gray-400 hover:text-gray-200"
+            }`}
+          >
+            About
+          </button>
+        </div>
+
+        {/* Content Body */}
+        <div className="p-6 overflow-y-auto space-y-5 text-sm flex-1">
+          {activeTab === "general" && (
+            <div className="space-y-4">
+              {/* Theme Selector */}
+              <div>
+                <label className="block text-xs font-medium text-gray-300 mb-2">
+                  Theme
+                </label>
+                <div className="grid grid-cols-3 gap-2">
+                  {[
+                    { id: "dark", label: "Dark", icon: Moon },
+                    { id: "light", label: "Light", icon: Sun },
+                    { id: "system", label: "System", icon: Laptop },
+                  ].map((t) => {
+                    const isSelected = theme === t.id;
+                    const Icon = t.icon;
+                    return (
+                      <button
+                        key={t.id}
+                        type="button"
+                        onClick={() => onThemeChange && onThemeChange(t.id as any)}
+                        className={`flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl border text-xs font-medium transition-colors ${
+                          isSelected
+                            ? "bg-[#2f2f2f] border-[#10a37f] text-white"
+                            : "bg-[#1e1e1e] border-white/5 text-gray-400 hover:text-white"
+                        }`}
+                      >
+                        <Icon className="w-3.5 h-3.5" />
+                        <span>{t.label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Language Info */}
+              <div className="p-3.5 rounded-xl bg-[#1c1c1c] border border-white/5 space-y-1">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-medium text-gray-200">Spoken Dialect</span>
+                  <span className="text-xs text-[#10a37f] font-semibold">Joeglish (Sacred)</span>
+                </div>
+                <p className="text-[11px] text-gray-400 leading-relaxed">
+                  ChatJoePT natively communicates with the authentic grammar and lore of the Joe Universe.
+                </p>
+              </div>
             </div>
-            <div className="relative">
-              <input
-                id="api-key-input"
-                type={showKey ? "text" : "password"}
-                value={apiKey}
-                onChange={(e) => setApiKey(e.target.value)}
-                placeholder="sk-..."
-                className="w-full bg-[#2f2f2f] text-white border border-white/10 rounded-xl px-3.5 py-2.5 text-xs font-mono pr-10 focus:outline-none focus:ring-2 focus:ring-[#10a37f]"
-              />
-              <button
-                type="button"
-                onClick={() => setShowKey(!showKey)}
-                className="absolute right-3 top-2.5 text-gray-400 hover:text-white"
-              >
-                {showKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-              </button>
+          )}
+
+          {activeTab === "account" && (
+            <div className="space-y-4">
+              {/* Account Card */}
+              <div className="p-4 rounded-xl bg-[#1c1c1c] border border-white/5 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-gray-400">Authenticated Email</span>
+                  <div className="flex items-center gap-1 text-xs text-emerald-400">
+                    <ShieldCheck className="w-3.5 h-3.5" />
+                    <span>Verified</span>
+                  </div>
+                </div>
+                <div className="text-sm font-semibold text-white font-mono break-all">
+                  {userEmail || "Anonymous Joe"}
+                </div>
+                <div className="text-[11px] text-gray-400">
+                  United Taylors &bull; Joe Universe Research Division
+                </div>
+              </div>
+
+              {/* Data controls: Clear all chats */}
+              <div className="pt-2 border-t border-white/10 space-y-2">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="text-xs font-medium text-white">Delete All Chats</div>
+                    <div className="text-[11px] text-gray-400">
+                      Permanently wipe all conversation sessions from this device
+                    </div>
+                  </div>
+
+                  {showClearConfirm ? (
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={handleClear}
+                        className="px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-xs font-medium rounded-lg transition-colors"
+                      >
+                        Confirm
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setShowClearConfirm(false)}
+                        className="px-2 py-1.5 text-xs text-gray-400 hover:text-white"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => setShowClearConfirm(true)}
+                      className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-red-400 hover:text-white bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 rounded-lg transition-colors"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                      <span>Delete All</span>
+                    </button>
+                  )}
+                </div>
+
+                {clearedNotice && (
+                  <div className="flex items-center gap-1.5 text-xs text-green-400 pt-1">
+                    <Check className="w-3.5 h-3.5" />
+                    <span>All conversations cleared successfully.</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Log out */}
+              <div className="pt-3 border-t border-white/10 flex items-center justify-between">
+                <div>
+                  <div className="text-xs font-medium text-white">Log Out</div>
+                  <div className="text-[11px] text-gray-400">
+                    Sign out of this session
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    onClose();
+                    onLogout();
+                  }}
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-300 hover:text-white bg-white/5 hover:bg-white/10 rounded-lg transition-colors"
+                >
+                  <LogOut className="w-3.5 h-3.5" />
+                  <span>Log out</span>
+                </button>
+              </div>
             </div>
-            <p className="text-[11px] text-gray-400 mt-1">
-              If left empty, ChatJoePT uses server environment credentials or its built-in Joe simulator.
-            </p>
-          </div>
+          )}
 
-          {/* Base URL */}
-          <div>
-            <label
-              htmlFor="base-url-input"
-              className="block text-xs font-medium text-gray-300 mb-1.5 flex items-center gap-1.5"
-            >
-              <Globe className="w-3.5 h-3.5 text-gray-400" />
-              API Base URL (OpenAI format)
-            </label>
-            <input
-              id="base-url-input"
-              type="text"
-              value={baseUrl}
-              onChange={(e) => setBaseUrl(e.target.value)}
-              placeholder="https://api.openai.com/v1"
-              className="w-full bg-[#2f2f2f] text-white border border-white/10 rounded-xl px-3.5 py-2.5 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-[#10a37f]"
-            />
-            <p className="text-[11px] text-gray-400 mt-1">
-              Compatible with OpenAI, Groq (<code className="text-[#10a37f]">https://api.groq.com/openai/v1</code>), OpenRouter, or local proxies.
-            </p>
-          </div>
+          {activeTab === "about" && (
+            <div className="space-y-4">
+              <div className="p-4 rounded-xl bg-[#1c1c1c] border border-white/5 text-center space-y-2">
+                <div className="w-10 h-10 rounded-full bg-[#10a37f] flex items-center justify-center mx-auto text-white shadow-md">
+                  <Sparkles className="w-5 h-5" />
+                </div>
+                <h3 className="text-base font-bold text-white">ChatJoePT</h3>
+                <p className="text-xs text-gray-300 max-w-sm mx-auto leading-relaxed">
+                  The official conversational intelligence of the Joe Universe, powered by the flagship JPT-6.1 Series.
+                </p>
+                <div className="text-[11px] text-gray-400 pt-1 font-mono">
+                  Version 6.1.0 &bull; Sol / Terra Core
+                </div>
+              </div>
 
-          {/* Model Name */}
-          <div>
-            <label
-              htmlFor="model-input"
-              className="block text-xs font-medium text-gray-300 mb-1.5"
-            >
-              Model Identifier
-            </label>
-            <input
-              id="model-input"
-              type="text"
-              value={model}
-              onChange={(e) => setModel(e.target.value)}
-              placeholder="gpt-4o"
-              className="w-full bg-[#2f2f2f] text-white border border-white/10 rounded-xl px-3.5 py-2.5 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-[#10a37f]"
-            />
-          </div>
-
-          {/* Joeglish System Prompt */}
-          <div>
-            <div className="flex items-center justify-between mb-1.5">
-              <label
-                htmlFor="system-prompt-input"
-                className="text-xs font-medium text-gray-300"
-              >
-                Joeglish System Instructions
-              </label>
-              <span className="text-[11px] text-[#10a37f]">Joe Universe Dialect</span>
+              <div className="text-center text-xs text-gray-400 italic">
+                &ldquo;To Joe, or not to Joe, that is the question.&rdquo;
+              </div>
             </div>
-            <textarea
-              id="system-prompt-input"
-              rows={5}
-              value={systemPrompt}
-              onChange={(e) => setSystemPrompt(e.target.value)}
-              className="w-full bg-[#2f2f2f] text-gray-200 border border-white/10 rounded-xl p-3 text-xs leading-relaxed focus:outline-none focus:ring-2 focus:ring-[#10a37f] resize-y font-mono"
-            />
-          </div>
+          )}
+        </div>
 
-          {/* Actions */}
-          <div className="flex items-center justify-between pt-4 border-t border-white/10">
-            <button
-              type="button"
-              onClick={handleReset}
-              className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-white px-3 py-2 rounded-lg hover:bg-white/5 transition-colors"
-            >
-              <RotateCcw className="w-3.5 h-3.5" />
-              <span>Reset to Defaults</span>
-            </button>
-
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={onClose}
-                className="px-4 py-2 text-xs font-medium text-gray-300 hover:text-white rounded-xl hover:bg-white/5 transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                className="flex items-center gap-1.5 px-5 py-2 text-xs font-medium bg-[#10a37f] hover:bg-[#0e8c6d] text-white rounded-xl shadow transition-colors"
-              >
-                <Save className="w-3.5 h-3.5" />
-                <span>{savedNotice ? "Saved!" : "Save Changes"}</span>
-              </button>
-            </div>
-          </div>
-        </form>
+        {/* Footer */}
+        <div className="px-6 py-3 border-t border-white/10 flex justify-end bg-[#1a1a1a]">
+          <button
+            type="button"
+            onClick={onClose}
+            className="px-4 py-2 text-xs font-medium bg-[#2f2f2f] hover:bg-white/10 text-white rounded-xl transition-colors"
+          >
+            Done
+          </button>
+        </div>
       </div>
     </div>
   );
