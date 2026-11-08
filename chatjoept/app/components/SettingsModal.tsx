@@ -19,6 +19,11 @@ interface SettingsModalProps {
   onLogout: () => void;
   theme?: "dark" | "light" | "system";
   onThemeChange?: (theme: "dark" | "light" | "system") => void;
+  quotas?: {
+    usagePercent: number;
+    dialogsPercent: number;
+    storagePercent: number;
+  };
 }
 
 export function SettingsModal({
@@ -29,6 +34,7 @@ export function SettingsModal({
   onLogout,
   theme = "dark",
   onThemeChange,
+  quotas = { usagePercent: 0, dialogsPercent: 0, storagePercent: 0 },
 }: SettingsModalProps) {
   const [activeTab, setActiveTab] = useState<"general" | "account" | "about">("general");
   const [showClearConfirm, setShowClearConfirm] = useState(false);
@@ -162,6 +168,91 @@ export function SettingsModal({
                 </div>
                 <div className="text-[11px] text-gray-400">
                   United Taylors &bull; Joe Universe Research Division
+                </div>
+              </div>
+
+              {/* Account Quotas & Capacity (Percentages only, no raw provider data) */}
+              <div className="p-4 rounded-xl bg-[#1c1c1c] border border-white/5 space-y-3">
+                <div className="text-xs font-semibold text-gray-200">Capacity & Quotas</div>
+
+                {/* 24-Hour Usage Quota */}
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-gray-400">24h Usage Quota</span>
+                    <span
+                      className={`font-mono font-medium ${
+                        quotas.usagePercent >= 90
+                          ? "text-red-400"
+                          : quotas.usagePercent >= 70
+                          ? "text-amber-400"
+                          : "text-[#10a37f]"
+                      }`}
+                    >
+                      {quotas.usagePercent}%
+                    </span>
+                  </div>
+                  <div className="w-full h-1.5 bg-white/10 rounded-full overflow-hidden">
+                    <div
+                      className={`h-full rounded-full transition-all duration-300 ${
+                        quotas.usagePercent >= 90
+                          ? "bg-red-500"
+                          : quotas.usagePercent >= 70
+                          ? "bg-amber-500"
+                          : "bg-[#10a37f]"
+                      }`}
+                      style={{
+                        width: `${Math.min(100, Math.max(0, quotas.usagePercent))}%`,
+                      }}
+                    />
+                  </div>
+                </div>
+
+                {/* Dialog Count Capacity */}
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-gray-400">Dialog Capacity</span>
+                    <span
+                      className={`font-mono font-medium ${
+                        quotas.dialogsPercent >= 90 ? "text-red-400" : "text-gray-300"
+                      }`}
+                    >
+                      {quotas.dialogsPercent}%
+                    </span>
+                  </div>
+                  <div className="w-full h-1.5 bg-white/10 rounded-full overflow-hidden">
+                    <div
+                      className={`h-full rounded-full transition-all duration-300 ${
+                        quotas.dialogsPercent >= 90 ? "bg-red-500" : "bg-emerald-500"
+                      }`}
+                      style={{
+                        width: `${Math.min(100, Math.max(0, quotas.dialogsPercent))}%`,
+                      }}
+                    />
+                  </div>
+                </div>
+
+                {/* Storage Space Capacity */}
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-gray-400">Storage Used</span>
+                    <span
+                      className={`font-mono font-medium ${
+                        quotas.storagePercent >= 90 ? "text-red-400" : "text-gray-300"
+                      }`}
+                    >
+                      {quotas.storagePercent}%
+                    </span>
+                  </div>
+                  <div className="w-full h-1.5 bg-white/10 rounded-full overflow-hidden">
+                    <div
+                      className={`h-full rounded-full transition-all duration-300 ${
+                        quotas.storagePercent >= 90 ? "bg-red-500" : "bg-teal-500"
+                      }`}
+                      style={{
+                        width: `${Math.min(100, Math.max(0, quotas.storagePercent))}%`,
+                      }}
+                    />
+                  </div>
                 </div>
               </div>
 

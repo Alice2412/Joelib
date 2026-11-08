@@ -24,6 +24,7 @@ import { ChatMessage } from "~/components/ChatMessage";
 import { ChatInput } from "~/components/ChatInput";
 import { EmptyState } from "~/components/EmptyState";
 import { SettingsModal } from "~/components/SettingsModal";
+import { ShareModal } from "~/components/ShareModal";
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const env = getEnv();
@@ -53,10 +54,59 @@ export default function Home() {
   const [isStreaming, setIsStreaming] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [shareModalOpen, setShareModalOpen] = useState(false);
   const [selectedModel, setSelectedModel] = useState("jpt-6.1-sol");
+  const [quotas, setQuotas] = useState<{
+    usagePercent: number;
+    dialogsPercent: number;
+    storagePercent: number;
+  }>({ usagePercent: 0, dialogsPercent: 0, storagePercent: 0 });
 
   const abortControllerRef = useRef<AbortController | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Sync a single dialog to the server (KV storage & quotas)
+  const syncDialogToServer = async (dialog: ChatSession) => {
+    if (!isAuthenticated) return;
+    try {
+      const res = await fetch("/api/dialogs", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ dialog }),
+      });
+      const data: any = await res.json();
+      if (data.quotas) {
+        setQuotas(data.quotas);
+      }
+    } catch (err) {
+      console.error("Failed to sync dialog to server:", err);
+    }
+  };
+
+  // Fetch dialogs & quotas from server
+  const fetchServerDialogs = async () => {
+    try {
+      const res = await fetch("/api/dialogs");
+      if (!res.ok) return;
+      const data: any = await res.json();
+      if (data.dialogs && Array.isArray(data.dialogs)) {
+        if (data.dialogs.length > 0) {
+          setSessions(data.dialogs);
+          saveLocalSessions(data.dialogs);
+          const activeId = getActiveSessionId();
+          if (!activeId || !data.dialogs.some((d: any) => d.id === activeId)) {
+            setActiveSessionIdState(data.dialogs[0].id);
+            setActiveSessionId(data.dialogs[0].id);
+          }
+        }
+      }
+      if (data.quotas) {
+        setQuotas(data.quotas);
+      }
+    } catch (err) {
+      console.error("Failed to fetch server dialogs:", err);
+    }
+  };
 
   // Load persisted sessions and settings on client mount
   useEffect(() => {
@@ -75,7 +125,11 @@ export default function Home() {
       setActiveSessionIdState(loadedSessions[0].id);
       setActiveSessionId(loadedSessions[0].id);
     }
-  }, []);
+
+    if (isAuthenticated) {
+      fetchServerDialogs();
+    }
+  }, [isAuthenticated]);
 
   // Sync sessions changes to localStorage
   const updateSessions = (newSessions: ChatSession[]) => {
@@ -120,14 +174,47 @@ export default function Home() {
     setActiveSessionId(id);
   };
 
-  // Delete a session
-  const handleDeleteSession = (id: string) => {
+  // Delete a session locally and on the server
+  const handleDeleteSession = async (id: string) => {
     const nextSessions = sessions.filter((s) => s.id !== id);
     updateSessions(nextSessions);
     if (activeSessionId === id) {
       const nextId = nextSessions.length > 0 ? nextSessions[0].id : null;
       setActiveSessionIdState(nextId);
       setActiveSessionId(nextId);
+    }
+    if (isAuthenticated) {
+      try {
+        const res = await fetch(`/api/dialogs?id=${encodeURIComponent(id)}`, {
+          method: "DELETE",
+        });
+        const data: any = await res.json();
+        if (data.quotas) {
+          setQuotas(data.quotas);
+        }
+      } catch (err) {
+        console.error("Failed to delete dialog on server:", err);
+      }
+    }
+  };
+
+  // Clear all chats locally and on the server
+  const handleClearAllChats = async () => {
+    updateSessions([]);
+    setActiveSessionIdState(null);
+    setActiveSessionId(null);
+    if (isAuthenticated) {
+      try {
+        const res = await fetch(`/api/dialogs?all=true`, {
+          method: "DELETE",
+        });
+        const data: any = await res.json();
+        if (data.quotas) {
+          setQuotas(data.quotas);
+        }
+      } catch (err) {
+        console.error("Failed to delete all dialogs on server:", err);
+      }
     }
   };
 
@@ -319,9 +406,13 @@ export default function Home() {
         streamedText += "</think>\n\n";
       }
 
-      // Final save to localStorage with complete streamed text
+      // Final save to localStorage with complete streamed text and sync to KV server
       setSessions((finalSessions) => {
         saveLocalSessions(finalSessions);
+        const finalDialog = finalSessions.find((s) => s.id === sessionId);
+        if (finalDialog) {
+          syncDialogToServer(finalDialog);
+        }
         return finalSessions;
       });
     } catch (err: any) {
@@ -344,6 +435,10 @@ export default function Home() {
             return { ...s, messages: msgs };
           });
           saveLocalSessions(updated);
+          const errorDialog = updated.find((s) => s.id === sessionId);
+          if (errorDialog) {
+            syncDialogToServer(errorDialog);
+          }
           return updated;
         });
       }
@@ -402,6 +497,7 @@ export default function Home() {
         onSuccess={(email) => {
           setUserEmail(email);
           setIsAuthenticated(true);
+          fetchServerDialogs();
         }}
       />
     );
@@ -459,18 +555,11 @@ export default function Home() {
             </button>
 
             <button
-              onClick={() => {
-                if (navigator.share) {
-                  navigator.share({
-                    title: "ChatJoePT",
-                    text: "Experience ChatJoePT in the Joe Universe!",
-                    url: window.location.href,
-                  });
-                }
-              }}
+              onClick={() => setShareModalOpen(true)}
               type="button"
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs text-gray-300 hover:text-white hover:bg-white/5 border border-white/5 transition-colors"
-              title="Share"
+              disabled={!currentSession || currentSession.messages.length === 0}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs text-gray-300 hover:text-white hover:bg-white/5 border border-white/5 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              title="Share conversation"
             >
               <Share2 className="w-3.5 h-3.5" />
               <span className="hidden sm:inline">Share</span>
@@ -517,12 +606,16 @@ export default function Home() {
         isOpen={settingsOpen}
         onClose={() => setSettingsOpen(false)}
         userEmail={userEmail}
-        onClearChats={() => {
-          updateSessions([]);
-          setActiveSessionIdState(null);
-          setActiveSessionId(null);
-        }}
+        quotas={quotas}
+        onClearChats={handleClearAllChats}
         onLogout={handleLogout}
+      />
+
+      {/* Share Modal */}
+      <ShareModal
+        isOpen={shareModalOpen}
+        onClose={() => setShareModalOpen(false)}
+        dialog={currentSession}
       />
     </div>
   );

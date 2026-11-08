@@ -13,6 +13,12 @@
 		"LLM_API_URL": "https://api.deepseek.com",
 		"LLM_BASE_MODEL": "deepseek-chat"
 	},
+	"kv_namespaces": [
+		{
+			"binding": "CHATJOEPT_KV",
+			"id": "chatjoept_kv"
+		}
+	],
 	"observability": {
 		"enabled": true
 	},
