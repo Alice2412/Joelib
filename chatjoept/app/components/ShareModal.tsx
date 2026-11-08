@@ -6,16 +6,26 @@ interface ShareModalProps {
   isOpen: boolean;
   onClose: () => void;
   dialog: ChatSession | null;
+  onShareCreated?: (shareId: string) => void;
 }
 
-export function ShareModal({ isOpen, onClose, dialog }: ShareModalProps) {
+export function ShareModal({
+  isOpen,
+  onClose,
+  dialog,
+  onShareCreated,
+}: ShareModalProps) {
   const [shareUrl, setShareUrl] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!isOpen || !dialog) return;
+    if (!isOpen || !dialog) {
+      setShareUrl("");
+      setCopied(false);
+      return;
+    }
 
     if (!dialog.messages || dialog.messages.length === 0) {
       setError("Cannot share an empty conversation. Send a message first!");
@@ -25,6 +35,7 @@ export function ShareModal({ isOpen, onClose, dialog }: ShareModalProps) {
 
     setError(null);
     setIsLoading(true);
+    setCopied(false);
 
     fetch("/api/dialogs/share", {
       method: "POST",
@@ -36,6 +47,9 @@ export function ShareModal({ isOpen, onClose, dialog }: ShareModalProps) {
         setIsLoading(false);
         if (data.success && data.shareUrl) {
           setShareUrl(data.shareUrl);
+          if (data.shareId && onShareCreated) {
+            onShareCreated(data.shareId);
+          }
         } else {
           setError(data.error || "Failed to create share link");
         }
@@ -44,7 +58,7 @@ export function ShareModal({ isOpen, onClose, dialog }: ShareModalProps) {
         setIsLoading(false);
         setError("Network error while generating share link");
       });
-  }, [isOpen, dialog]);
+  }, [isOpen, dialog?.id, dialog?.messages?.length]);
 
   if (!isOpen) return null;
 
@@ -79,7 +93,7 @@ export function ShareModal({ isOpen, onClose, dialog }: ShareModalProps) {
         {/* Content */}
         <div className="p-6 space-y-4">
           <p className="text-xs text-gray-400 leading-relaxed">
-            Messages you send after creating this link will not be shared. Anyone with the link will be able to view this conversation without logging in.
+            Anyone with this link will be able to view all rounds of this conversation without logging in.
           </p>
 
           {dialog && (
@@ -88,7 +102,11 @@ export function ShareModal({ isOpen, onClose, dialog }: ShareModalProps) {
                 {dialog.title || "Untitled chat"}
               </div>
               <div className="text-[11px] text-gray-400 mt-1 flex items-center gap-2">
-                <span>{dialog.messages.length} messages</span>
+                <span>
+                  {dialog.messages.length} message{dialog.messages.length !== 1 ? "s" : ""} (
+                  {Math.ceil(dialog.messages.length / 2)} round
+                  {Math.ceil(dialog.messages.length / 2) !== 1 ? "s" : ""})
+                </span>
                 <span>&bull;</span>
                 <span className="capitalize">{dialog.model || "JPT-6.1 Sol"}</span>
               </div>

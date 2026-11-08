@@ -21,6 +21,7 @@ export interface ChatSession {
   model: string;
   createdAt: number;
   updatedAt: number;
+  shareId?: string;
 }
 
 export interface UserSettings {

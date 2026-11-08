@@ -407,17 +407,30 @@ export default function Home() {
       }
 
       // Final save to localStorage with complete streamed text and sync to KV server
-      setSessions((finalSessions) => {
-        saveLocalSessions(finalSessions);
-        const finalDialog = finalSessions.find((s) => s.id === sessionId);
-        if (finalDialog) {
-          syncDialogToServer(finalDialog);
-        }
-        return finalSessions;
+      let finalDialogToSync: ChatSession | null = null;
+      setSessions((currentSessions) => {
+        const updated = currentSessions.map((s) => {
+          if (s.id !== sessionId) return s;
+          const msgs = [...s.messages];
+          const lastIdx = msgs.length - 1;
+          if (lastIdx >= 0 && msgs[lastIdx].role === "assistant") {
+            msgs[lastIdx] = { ...msgs[lastIdx], content: streamedText };
+          }
+          const finished = { ...s, messages: msgs, updatedAt: Date.now() };
+          finalDialogToSync = finished;
+          return finished;
+        });
+        saveLocalSessions(updated);
+        return updated;
       });
+
+      if (finalDialogToSync) {
+        syncDialogToServer(finalDialogToSync);
+      }
     } catch (err: any) {
       if (err.name !== "AbortError") {
         console.error("Chat streaming error:", err);
+        let errorDialogToSync: ChatSession | null = null;
         setSessions((currentSessions) => {
           const updated = currentSessions.map((s) => {
             if (s.id !== sessionId) return s;
@@ -432,15 +445,17 @@ export default function Home() {
                   `\n\n*[ChatJoePT Error]: ${err.message || "Failed to communicate with service"}*`,
               };
             }
-            return { ...s, messages: msgs };
+            const errorSession = { ...s, messages: msgs };
+            errorDialogToSync = errorSession;
+            return errorSession;
           });
           saveLocalSessions(updated);
-          const errorDialog = updated.find((s) => s.id === sessionId);
-          if (errorDialog) {
-            syncDialogToServer(errorDialog);
-          }
           return updated;
         });
+
+        if (errorDialogToSync) {
+          syncDialogToServer(errorDialogToSync);
+        }
       }
     } finally {
       setIsStreaming(false);
@@ -616,6 +631,15 @@ export default function Home() {
         isOpen={shareModalOpen}
         onClose={() => setShareModalOpen(false)}
         dialog={currentSession}
+        onShareCreated={(shareId) => {
+          if (currentSession) {
+            const updatedSession = { ...currentSession, shareId };
+            const nextSessions = sessions.map((s) =>
+              s.id === currentSession.id ? updatedSession : s
+            );
+            updateSessions(nextSessions);
+          }
+        }}
       />
     </div>
   );

@@ -1,6 +1,6 @@
 import type { ActionFunctionArgs } from "react-router";
 import { parseSessionCookie, verifySessionToken, getEnv } from "~/utils/auth.server";
-import { createSharedDialog } from "~/utils/kv";
+import { createSharedDialog, saveUserDialog } from "~/utils/kv";
 import type { ChatSession } from "~/types/chat";
 
 export async function action({ request }: ActionFunctionArgs) {
@@ -33,6 +33,12 @@ export async function action({ request }: ActionFunctionArgs) {
   const shareId = await createSharedDialog(dialog, env);
   const origin = new URL(request.url).origin;
   const shareUrl = `${origin}/share/${shareId}`;
+
+  // Persist shareId association with user's dialog so future rounds automatically sync to it
+  if (dialog.id) {
+    dialog.shareId = shareId;
+    await saveUserDialog(session.email, dialog, env).catch(console.error);
+  }
 
   return Response.json({
     success: true,

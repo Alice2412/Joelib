@@ -269,6 +269,19 @@ export async function saveUserDialog(
   const dialogKey = `user:${email.toLowerCase()}:dialog:${dialog.id}`;
   await kv.put(dialogKey, serialized);
 
+  // If this dialog has been shared publicly, keep the shared link synced with all latest messages
+  if (dialog.shareId) {
+    const shareKey = `share:${dialog.shareId}`;
+    const shared: SharedDialog = {
+      id: dialog.shareId,
+      title: dialog.title || "Shared chat",
+      model: dialog.model || "jpt-6.1-sol",
+      createdAt: dialog.createdAt || Date.now(),
+      messages: dialog.messages || [],
+    };
+    await kv.put(shareKey, JSON.stringify(shared));
+  }
+
   // 2. Update index
   const meta: DialogMeta = {
     id: dialog.id,
@@ -407,13 +420,15 @@ export async function createSharedDialog(
   env?: any
 ): Promise<string> {
   const kv = getKV(env);
-  const shareId = `sh_${crypto.randomUUID().replace(/-/g, "").slice(0, 16)}`;
+  // Reuse existing shareId if already shared, or generate a clean unique identifier
+  const shareId =
+    dialog.shareId || `sh_${crypto.randomUUID().replace(/-/g, "").slice(0, 16)}`;
 
   const shared: SharedDialog = {
     id: shareId,
     title: dialog.title || "Shared chat",
     model: dialog.model || "jpt-6.1-sol",
-    createdAt: Date.now(),
+    createdAt: dialog.createdAt || Date.now(),
     messages: dialog.messages || [],
   };
 
