@@ -1,0 +1,21 @@
+/**
+ * For more details on how to configure Wrangler, refer to:
+ * https://developers.cloudflare.com/workers/wrangler/configuration/
+ */
+{
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"name": "chatjoept",
+	"compatibility_date": "2026-11-04",
+	"main": "./workers/app.ts",
+	"vars": {
+		"ALLOWED_EMAIL_DOMAINS": "united-taylors.org,sstx.org,hamdenhall.org",
+		"RESEND_FROM_EMAIL": "ChatJoePT <chatjoept-noreply@united-taylors.org>",
+		"LLM_API_URL": "https://api.openai.com/v1",
+		"LLM_BASE_MODEL": "gpt-4o",
+		"SESSION_SECRET": "chatjoept-secret-key-joe-universe-2026"
+	},
+	"observability": {
+		"enabled": true
+	},
+	"upload_source_maps": true
+}
