@@ -54,21 +54,9 @@ The Joe Wiki, see the Wiki page of this repository.
   
   [Joekemon Joetinum Files Folder](https://drive.google.com/drive/folders/12B_Cm1olCZAFOI12fyxzr6oNSVxFYmd2?usp=sharing)
 
-- **JoeLang Version 0.9 - Online Console** by Derek Li
-  
-  According to our understandings of the Joe universe, we modeled a coding language called the JoeLang, here's its first version of an online console.
-  
-  [JoeLang Online Console Website](https://joelang-ide-20261106.nurturingpeony1.chatgpt.site)
+- **JoeLang Studio** Version 1.0-beta by Derek Li
 
-- **JoeLang Studio 0.9** by Derek Li
-
-  Continuing the Online Console, JoeLang now has its own IDE studio that is tested working, supporting JoeLang 0.9.
-
-  [JeoLang Online Studio Wesbite](https://joelang-studio-20261107.nurturingpeony1.chatgpt.site)
-
-- **JoeLang Language Pack 0.9** by Derek Li
-
-  JoeLang now has its independent language pack, you can develop your own IDE based on this language pack. (This can also be found at Joelin/JoeLang/pack)
+  The coding language of Joe Universe called JoeLang, studied by Derek Li and made a projection to our own computers so we can learn and code normally with JoeLang. According to Gunmu, JoeLang is the prevalent coding language in Joe Universe, everyone uses JoeLang to code. Learn JoeLang at [JoeLang 1.0 User Manual](https://github.com/N0TD3R3K/Joelib/blob/main/JoeLang/documents/1.0/JoeLang_1.0_User_Manual.pdf)
 
   [Download JoeLang Language Pack 0.9](https://joelang-language-pack-20261107.nurturingpeony1.chatgpt.site)
 
@@ -77,3 +65,7 @@ The Joe Wiki, see the Wiki page of this repository.
   A faithful ChatGPT replica designed for the Joe Universe, featuring streaming Joeglish dialogues, full KaTeX LaTeX math support, Cloudflare KV cross-device session synchronization, rolling 24-hour account usage limits, quota percentage tracking in Settings, and public unauthenticated chat sharing.
 
   [ChatJoePT Web Application](https://chatjoept.waynexu2020.workers.dev)
+  
+- **JoeLang Studio Online** by Derek Li
+
+  [JoeLang Studio Website](https://joelang-studio-1-0-20261107.nurturingpeony1.chatgpt.site)
